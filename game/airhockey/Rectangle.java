@@ -1,3 +1,5 @@
+package airhockey;
+
 /**
  * Models a simple, solid rectangle. 
  * This class represents a Rectangle object. When combined with the GameArena class,

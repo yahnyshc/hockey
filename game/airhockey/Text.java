@@ -1,3 +1,5 @@
+package airhockey;
+
 /**
  * Models a simple piece of text. 
  * This class represents a Text object. When combined with the GameArena class,

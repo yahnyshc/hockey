@@ -1,4 +1,3 @@
-package airhockey;
 
 /**
  * Models a simple line. 
@@ -141,6 +140,15 @@ public class Line
 	{
 		return colour;
 	}
+
+	/**
+	 * Set colour of this Line.
+	 */
+	public void setColour(String colour)
+	{
+		this.colour = colour;
+	}
+
 
 	/**
 	 * Obtains the layer of this Line.

@@ -1,4 +1,3 @@
-package airhockey;
 
 /**
  * Models a simple piece of text. 

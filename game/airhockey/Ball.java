@@ -1,4 +1,4 @@
-package airhockey;
+
 /**
  * Models a simple solid sphere. 
  * This class represents a Ball object. When combined with the GameArena class,
@@ -15,6 +15,8 @@ public class Ball
 	private double size;				// The diameter of this Ball
 	private int layer;					// The layer of this ball is on.
 	private String colour;				// The colour of this Ball
+	private double xSpeed = 0;
+	private double ySpeed = 0;
 
 										// Permissible colours are:
 										// BLACK, BLUE, CYAN, DARKGREY, GREY,
@@ -53,6 +55,23 @@ public class Ball
 		this.colour = col;
 		this.layer = layer;
 	}	
+
+
+	public double getXSpeed() {
+		return xSpeed;
+	}
+
+	public double getYSpeed() {
+		return ySpeed;
+	}
+
+	public void setXSpeed(double xSpeed) {
+		this.xSpeed = xSpeed;
+	}
+
+	public void setYSpeed(double ySpeed) {
+		this.ySpeed = ySpeed;
+	}
 
 	/**
 	 * Obtains the current position of this Ball.
@@ -170,5 +189,72 @@ public class Ball
 		double distance = Math.sqrt(dx*dx+dy*dy);
 
 		return distance < size/2 + b.size/2;
+	}
+
+	/**
+	 * Determines if this Ball hits the borders.
+	 * 
+	 * @param hockey hockey game object
+	 * @return true if this ball hits the border
+	 */
+	public double[] collidesBorders(Game hockey, boolean checkGoal)
+	{	
+		double shortestDist = 10000;
+		Line border = hockey.getBorders()[0];
+
+		for(int i = 0; i < hockey.getBorders().length; i++){
+			double x1 = hockey.getBorders()[i].getXStart();
+			double y1 = hockey.getBorders()[i].getYStart();
+			double x2 = hockey.getBorders()[i].getXEnd();
+			double y2 = hockey.getBorders()[i].getYEnd();
+
+			double a = y1-y2;
+			double b = x2-x1;
+			double c = (x1-x2)*y1 + (y2-y1)*x1;
+
+			double distance = Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
+			if ( distance < shortestDist){
+				shortestDist = distance;
+				border = hockey.getBorders()[i];
+			}
+		}
+		if ( shortestDist - hockey.getBordersThickness()/2 < size/2 
+			 && ! this.getXPosition() > ){
+			return getSpPoint(border, this);
+		}
+
+		shortestDist = 10000;
+		border = hockey.getGoalNet()[0];
+		for(int i = 0; i < hockey.getGoalNet().length; i++){
+			double x1 = hockey.getGoalNet()[i].getXStart();
+			double y1 = hockey.getGoalNet()[i].getYStart();
+			double x2 = hockey.getGoalNet()[i].getXEnd();
+			double y2 = hockey.getGoalNet()[i].getYEnd();
+
+			double a = y1-y2;
+			double b = x2-x1;
+			double c = (x1-x2)*y1 + (y2-y1)*x1;
+
+			double distance = Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
+			if ( distance < shortestDist){
+				shortestDist = distance;
+				border = hockey.getGoalNet()[i];
+			}
+		}
+
+		if ( shortestDist - (hockey.getBordersThickness()-2)/2 < size/2 
+			&& (hockey.getPuck().getXPosition() < hockey.getArenaGoalLimits()[0] + 3 
+			||  hockey.getPuck().getXPosition() > hockey.getArenaGoalLimits()[1] - 3)){
+				return getSpPoint(border, this);
+		}
+		return new double[]{0,0};
+	}
+
+	public double[] getSpPoint(Line line, Ball ball){
+		double x1=line.getXStart(), y1=line.getYStart(), x2=line.getXEnd(), y2=line.getYEnd(), x3=ball.getXPosition(), y3=ball.getYPosition();
+		double px = x2-x1, py = y2-y1, dAB = px*px + py*py;
+		double u = ((x3 - x1) * px + (y3 - y1) * py) / dAB;
+		double x = x1 + u * px, y = y1 + u * py;
+		return new double[]{x, y}; //this is D
 	}
 }

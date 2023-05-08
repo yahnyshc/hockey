@@ -1,4 +1,3 @@
-package airhockey;
 
 import javax.swing.*;
 import java.awt.*;
@@ -162,7 +161,6 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 
 		if (frame != null)
 			frame.setSize(arenaWidth + frame.getInsets().left + frame.getInsets().right, arenaHeight + frame.getInsets().top + frame.getInsets().bottom);
-
 
 	}
 
@@ -493,7 +491,8 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 	 */
 	public void pause()
 	{
-		try { Thread.sleep(20); }
+		// Change sleep to 1
+		try { Thread.sleep(3); }
 		catch (Exception e) {};
 	}
 

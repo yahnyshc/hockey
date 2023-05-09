@@ -218,8 +218,9 @@ public class Ball
 				border = hockey.getBorders()[i];
 			}
 		}
-		if ( shortestDist - hockey.getBordersThickness()/2 < size/2 
-			 && ! this.getXPosition() > ){
+		if ( shortestDist - hockey.getBordersThickness()/2 < this.size/2 
+			&& (this.getXPosition() - this.getSize()/2 + 0.5 > hockey.getArenaGoalLimits()[0]) 
+			&& (this.getXPosition() + this.getSize()/2 - 0.5 < hockey.getArenaGoalLimits()[1])){
 			return getSpPoint(border, this);
 		}
 
@@ -242,9 +243,9 @@ public class Ball
 			}
 		}
 
-		if ( shortestDist - (hockey.getBordersThickness()-2)/2 < size/2 
-			&& (hockey.getPuck().getXPosition() < hockey.getArenaGoalLimits()[0] + 3 
-			||  hockey.getPuck().getXPosition() > hockey.getArenaGoalLimits()[1] - 3)){
+		if ( shortestDist - (hockey.getBordersThickness()-2)/2 < this.size/2 
+			&& (this.getXPosition() - this.getSize()/2 < hockey.getArenaGoalLimits()[0] 
+			|| this.getXPosition() + this.getSize()/2 > hockey.getArenaGoalLimits()[1])){
 				return getSpPoint(border, this);
 		}
 		return new double[]{0,0};

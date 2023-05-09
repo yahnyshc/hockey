@@ -8,12 +8,7 @@ public class Play{
         hockey.getPuck().setYSpeed(0);
         Thread t1 = new Thread() {
             public void run() {
-                while(true){
-                    movePuck(hockey);
-                    //hockey.getArena().pause();
-                    try { sleep(10); }
-		            catch (Exception e) {};
-                }
+                movePuck(hockey);
             }
         };
         t1.start();
@@ -22,6 +17,11 @@ public class Play{
             public void run() {
                 while(true){
                     moveRedMallet(hockey);
+                    if ( hockey.getArena().letterPressed('R') || hockey.getArena().letterPressed('N') ){
+                        hockey.getArena().pause();
+                        hockey.restart();
+                        hockey.getArena().pause();
+                    }
                     try { sleep(3); }
 		            catch (Exception e) {};
                 }
@@ -48,10 +48,29 @@ public class Play{
             //checkGoal(hockey);
             borderCollision[0] = 0;
             borderCollision[1] = 0;
+            double prevXpos = hockey.getPuck().getXPosition();
+            double prevYpos = hockey.getPuck().getYPosition();
             hockey.getPuck().move(hockey.getPuck().getXSpeed(), hockey.getPuck().getYSpeed());
+            // Bugs prevention
+            if (hockey.getPuck().getXPosition() == 0 && hockey.getPuck().getYPosition() == 0){
+                hockey.getPuck().setXPosition(prevXpos);
+                hockey.getPuck().setYPosition(prevYpos);
+                hockey.getPuck().setXSpeed(0);
+                hockey.getPuck().setYSpeed(0);
+            }
             borderCollision = hockey.getPuck().collidesBorders(hockey, true);
             if (! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
                 deflect(hockey.getPuck(), hockey.getPuck(), borderCollision, true);
+                if ( hockey.getPuck().collides( hockey.getRedMallet()) ){
+                    hockey.getRedMallet().move( hockey.getPuck().getXSpeed()*5, hockey.getPuck().getYSpeed()*5 );
+                }
+                if( hockey.getPuck().collides( hockey.getBlueMallet()) ){
+                    hockey.getBlueMallet().move( hockey.getPuck().getXSpeed()*5, hockey.getPuck().getYSpeed()*5 );
+                }
+            }
+            else if ( hockey.getPuck().collides( hockey.getBlueMallet()) && hockey.getPuck().collides( hockey.getRedMallet())){
+                hockey.getRedMallet().move( hockey.getBlueMallet().getXSpeed()*5, hockey.getBlueMallet().getYSpeed()*5 );
+                hockey.getBlueMallet().move( hockey.getRedMallet().getXSpeed()*5, hockey.getRedMallet().getYSpeed()*5 );
             }
             else if ( hockey.getPuck().collides( hockey.getBlueMallet() ) ){
                 deflect(hockey.getPuck(), hockey.getBlueMallet(), borderCollision, false);
@@ -188,8 +207,8 @@ public class Play{
         if ( isBorder ){
             xPosition2 = borderCollision[0];
             yPosition2 = borderCollision[1];
-            xSpeed2 = -1 * xSpeed1 * 1.5;
-            ySpeed2 = -1 * ySpeed1 * 1.5;
+            xSpeed2 = -1 * xSpeed1 * 1.3;
+            ySpeed2 = -1 * ySpeed1 * 1.3;
         }
         else{
             xPosition2 = ball2.getXPosition();
@@ -225,7 +244,7 @@ public class Play{
         // Scale the resultant trajectories if we've accidentally broken the laws of physics.
         double mag = (p1InitialMomentum + p2InitialMomentum) / (p1FinalMomentum + p2FinalMomentum);
         // Calculate the final x and y speed settings for the two balls after collision.
-        double slowDown = 0.6;
+        double slowDown = 0.7;
         ball1.setXSpeed( p1FinalTrajectory[0] * mag * slowDown);
         ball1.setYSpeed( p1FinalTrajectory[1] * mag * slowDown);
     }

@@ -1,48 +1,53 @@
 import java.util.Random;
 import javax.sound.sampled.Clip;
 import java.io.File;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
 public class Game
 {
-    private int width;
-    private int height;
-    private GameArena arena;
-    private Ball redMallet;
-    private Ball blueMallet;
-    private Ball puck;
-    private double puckSpeedMultiplier;
-    private int[] redMalletStartingPos;
-    private int[] blueMalletStartingPos;
-    private int[] puckStartingPos;
-    private int redMalletSize;
-    private int blueMalletSize;
-    private double puckSize;
-    private int topBottomIntend;
-    private int leftRightIntend;
-    private int goalWidth;
-    private int gapsWidth;
-    private double centreSize;
-    private Line[] borders;
-    private double[] arenaGoalLimits;
-    private int bordersThickness;
-    private Ball centreIn;
-    private Ball centreOut;
-    private Line goalLeftLine;
-    private Line goalRightLine;
-    private Line[] goalNet;
-    private String[] borderColours;
-    private Text redMalletScore;
-    private Text blueMalletScore;
-    private Text[] cheatCodes;
-    private Text[] gameParams;
+    private int width;  // The width of the game arena
+    private int height; // The height of the game arena
+    private GameArena arena; // The game arena
+    private Ball redMallet; // The red mallet
+    private Ball blueMallet; // The blue mallet
+    private Ball puck; // The puck
+    private double puckSpeedMultiplier; // The puck speed multiplier
+    private int[] redMalletStartingPos; // The red mallet starting positions
+    private int[] blueMalletStartingPos; // The blue mallet starting positions
+    private int[] puckStartingPos; // The puck starting positions
+    private int redMalletSize; // The red mallet size
+    private int blueMalletSize; // The blue mallet size
+    private double puckSize; // The puck size 
+    private int topBottomIntend; // The top bottom intend
+    private int leftRightIntend; // The left right intend
+    private int goalWidth; // The goal width 
+    private int gapsWidth; // The gaps width
+    private double centreSize; // The centre size
+    private Line[] borders; // The borders array
+    private double[] arenaGoalLimits; // The arena goal limits
+    private int bordersThickness; // The borders thickness
+    private Ball centreIn; // The centre inner circle
+    private Ball centreOut; // The centre outer circle
+    private Line goalLeftLine; // The goal left line
+    private Line goalRightLine; // The goal right line
+    private Line[] goalNet; // goal net borders array
+    private String[] borderColours; // The border colours array
+    private Text redMalletScore; // The red mallet score
+    private Text blueMalletScore; // The blue mallet score
+    private Text[] cheatCodes; // The cheat codes array
+    private Text[] gameParams; // The game params array
+    private File bounceSound = new File("bounce.wav"); // The bounce sound file
+    private File winSound = new File("applause.wav"); // The win sound file
+    private boolean StopGoalCelebrations = false; // The stop goal celebrations flag
+    private int goalsToWin = 6; // The number of goals to win the game
 
+    // Constructor of the hockey game
     public Game(){
         width = 1200;
         height = 800;
         this.arena = new GameArena(width, height);
 
+        // Cheat messages
         Text Cheats = new Text("Cheats: ", 20, width/4, height-60, "White", 3 );
         Text Restart = new Text("1) Press R to reset positions or N to restart ", 15, width/4+100, height-90, "CYAN", 3 );
         Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "CYAN", 3 );
@@ -51,16 +56,20 @@ public class Game
 
         cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize};
         
+        // Game parameters by default
         Text puckSpd = new Text("Puck speed = 0.6", 20, 250, 30, "White", 3 );
         Text puckSz = new Text("Puck size = 20", 20, 525, 30, "White", 3 );
         Text goalSz = new Text("Goal size = 160", 20, 775, 30, "White", 3 );
         
         gameParams = new Text[]{puckSpd, puckSz, goalSz };
 
+        // Initialize variables
         start();
     }
 
+    // Method to set variables
     public void start(){
+        // remove if somthing present on the game arena
         arena.clearGameArena();
         redMalletStartingPos = new int[]{this.width/6, this.height/2};
         blueMalletStartingPos = new int[]{(this.width/6)*5, this.height/2};
@@ -98,6 +107,144 @@ public class Game
         addParams();
     }
 
+    // function to constantly move the puck
+    public void movePuck(){
+        // array to have postion of ball collision with the wall to reflect the ball
+        double[] borderCollision = {0,0};
+        // friction to slow down th puck
+        double friction = 0.99973;
+        double prevXpos = 0;
+        double prevYpos = 0;
+        double prevXspd = 0;
+        double prevYspd = 0;
+
+        while(true){
+            // safety checks
+            if (Double.isNaN(puck.getXSpeed())
+            || Double.isNaN(puck.getYSpeed())){
+                puck.setXPosition(prevXpos);
+                puck.setYPosition(prevYpos);
+                puck.setXSpeed(-(prevXspd+0.1));
+                puck.setYSpeed(-(prevYspd+0.1));
+            }
+            prevXpos = puck.getXPosition();
+            prevYpos = puck.getYPosition();
+            prevXspd = puck.getXSpeed();
+            prevYspd = puck.getYSpeed();
+            
+            // Celebration in case of goal or win
+            checkGoal();
+
+            borderCollision[0] = 0;
+            borderCollision[1] = 0;
+
+            // move puck
+            puck.move(puck.getXSpeed(), puck.getYSpeed());
+
+            // find collision point (if no colision return 0,0)
+            borderCollision = puck.collidesBorders(this, true);
+            if (! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
+                puck.deflect(this, puck, borderCollision, true);
+                // don't let balls go into each other
+                if ( puck.collides( redMallet) ){
+                    redMallet.move( puck.getXSpeed()*5, puck.getYSpeed()*5 );
+                }
+                if( puck.collides( blueMallet) ){
+                    blueMallet.move( puck.getXSpeed()*5, puck.getYSpeed()*5 );
+                }
+            }
+            // don't let balls go into each other
+            else if ( puck.collides( blueMallet) && puck.collides( redMallet)){
+                redMallet.move( blueMallet.getXSpeed()*5, blueMallet.getYSpeed()*5 );
+                blueMallet.move( redMallet.getXSpeed()*5, redMallet.getYSpeed()*5 );
+            }
+            else if ( puck.collides( blueMallet ) ){
+                puck.deflect(this, blueMallet, borderCollision, false);
+            }
+            else if( puck.collides( redMallet ) ){
+                puck.deflect(this, redMallet, borderCollision, false);
+            }
+            // apply friction
+            puck.setXSpeed(puck.getXSpeed() * friction);
+            puck.setYSpeed(puck.getYSpeed() * friction);
+            try { Thread.sleep(1); }
+		    catch (Exception e) {};
+        }
+    }
+
+    // move red mallet
+    public void moveRedMallet(){
+        boolean w = arena.letterPressed('W');
+        boolean a = arena.letterPressed('A');
+        boolean s = arena.letterPressed('S');
+        boolean d = arena.letterPressed('D');
+        
+        // determine x direction
+        int xMove = 0;
+        xMove += d ? 1 : 0;
+        xMove += a ? -1 : 0;
+
+        // determine y direction
+        int yMove = 0;
+        yMove += s ? 1 : 0;
+        yMove += w ? -1 : 0;
+
+        redMallet.setXSpeed(xMove);
+        redMallet.setYSpeed(yMove);
+
+        redMallet.move( xMove, yMove );
+        
+        double[] borderCollision = redMallet.collidesBorders(this, true);
+        if( ! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
+            redMallet.move( -xMove, -yMove );
+        }
+        else if( redMallet.getXPosition() + blueMallet.getSize()/2 >= getWidth()/2 ){
+            redMallet.move( -xMove, -yMove );
+        }
+        else if( redMallet.collides(puck) ){
+            double[] borderC = puck.collidesBorders(this, false);
+            if ( borderC[0]!= 0 && borderC[1]!=0 ){
+                redMallet.move( -xMove, -yMove );
+            }
+        }
+
+    }
+
+    // move blue mallet
+    public void moveBlueMallet(){
+        boolean up = arena.upPressed();
+        boolean left = arena.leftPressed();
+        boolean right = arena.rightPressed();
+        boolean down = arena.downPressed();
+
+        int xMove = 0;
+        xMove += right ? 1 : 0;
+        xMove += left ? -1 : 0;
+
+        int yMove = 0;
+        yMove += down ? 1 : 0;
+        yMove += up ? -1 : 0;
+
+        blueMallet.setXSpeed(xMove);
+        blueMallet.setYSpeed(yMove);
+
+        blueMallet.move( xMove, yMove );
+        double[] borderCollision = blueMallet.collidesBorders(this, true);
+        if( ! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
+            blueMallet.move( -xMove, -yMove );
+        }
+        else if( blueMallet.getXPosition() - blueMallet.getSize()/2 <= getWidth()/2 ){
+            blueMallet.move( -xMove, -yMove );
+        }
+        else if( blueMallet.collides(puck) ){
+            double[] borderC = puck.collidesBorders(this, false);
+            if ( borderC[0]!= 0 && borderC[1]!=0 ){
+                blueMallet.move( -xMove, -yMove );
+            }
+        }
+    }
+
+    // reset balls positions
     public void resetPositions(){
         redMallet.setXPosition(redMalletStartingPos[0]);
         redMallet.setYPosition(redMalletStartingPos[1]);
@@ -110,7 +257,7 @@ public class Game
         puck.setYSpeed(0);
     }
 
-    
+    // create arena borders
     public void setBorders(){
         Line topLeftCornerTop = new Line(leftRightIntend+25, topBottomIntend, width/2-gapsWidth/2, topBottomIntend, bordersThickness, borderColours[0], 3);
         Line topLeftCornerLeft = new Line(leftRightIntend+25, topBottomIntend, leftRightIntend, height/2-goalWidth/2+2, bordersThickness, borderColours[0], 3);
@@ -135,6 +282,7 @@ public class Game
         }
     }
 
+    // remove borders
     public void resetBorders(){
         for (int i = 0; i < borders.length; i++ ){
             arena.removeLine(borders[i]);
@@ -142,6 +290,7 @@ public class Game
         setBorders();
     }
 
+    // create goal net
     public void setGoalNet(){
         Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "WHITE", 2);
         Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 3, "WHITE", 3);
@@ -169,6 +318,7 @@ public class Game
         arena.addLine(goalRightLine);
     }
 
+    // remove goal net
     public void resetGoalNet(){
         for (int i = 0; i < this.goalNet.length; i++ ){
             arena.removeLine(this.goalNet[i]);
@@ -180,12 +330,14 @@ public class Game
         setGoalNet();
     }
 
+    // output game parameters
     public void addParams(){
         for(int i = 0; i < this.gameParams.length; i++){
             arena.addText(this.gameParams[i]);
         }
     }
 
+    // add additional design lines
     public void additionalLines(){
         Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
         Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
@@ -204,6 +356,7 @@ public class Game
         arena.addBall(centreOut); 
     }
 
+    // set score to s1 and s2
     public void setScore(int s1, int s2){
         String score1 = Integer.toString(s1);
         String score2 = Integer.toString(s2);
@@ -215,10 +368,14 @@ public class Game
         arena.addText(blueMalletScore);
     }   
 
+    // check if it is a goal
     public void checkGoal(){
         boolean redScored = this.getPuck().getXPosition() - this.getPuck().getSize()/2 - 2 > this.getArenaGoalLimits()[1];
         boolean blueScored = this.getPuck().getXPosition() + this.getPuck().getSize()/2 + 2 < this.getArenaGoalLimits()[0];
         Text goalMessage = null;
+        String message = "GOAL!!!";
+        String colour = "ORANGE";
+        boolean isWin = false;
         if (redScored || blueScored){
             if ( blueScored ){
                 this.setScore(Integer.parseInt(this.getRedMalletScore().getText()), Integer.parseInt(this.getBlueMalletScore().getText()) + 1);
@@ -227,19 +384,28 @@ public class Game
                 this.setScore(Integer.parseInt(this.getRedMalletScore().getText()) + 1, Integer.parseInt(this.getBlueMalletScore().getText()));
             }
             
-            if(Integer.parseInt(this.getBlueMalletScore().getText()) == 7 || Integer.parseInt(this.getRedMalletScore().getText()) == 7){
-                // end game
+            boolean blueWon = Integer.parseInt(this.getBlueMalletScore().getText()) == goalsToWin;
+            boolean redWon = Integer.parseInt(this.getRedMalletScore().getText()) == goalsToWin;
+            if(blueWon || redWon){
+                colour = blueWon ? "BLUE":"RED";
+                message = colour+" WON!";
+                // if game over, extend celebrations
+                isWin = true;
             }
 
             String[] colours = this.getBorderColours();
-            for(int i = 0; i < 8; i++){
+            for(int i = 0; i < 8*(isWin ? 30 : 1); i++){
+                if ( StopGoalCelebrations ){
+                    StopGoalCelebrations = false;
+                    return;
+                }
                 String last = colours[3];
                 for(int j = 3; j > 0; j--){
                     colours[j] = colours[j-1];
                 }
                 colours[0] = last;
                 this.setBorderColours(colours);
-                goalMessage = appearingMessage("GOAL!!!");
+                goalMessage = appearingMessage(message, colour);
                 try { Thread.sleep(400);}
                 catch (Exception e) {};
                 arena.removeText(goalMessage);
@@ -265,6 +431,7 @@ public class Game
         }
     }
 
+    // check if cheats are used
     public void checkCheat(){
         if ( arena.letterPressed('C') ){
             displayCheats();
@@ -275,11 +442,13 @@ public class Game
         }
         if ( arena.letterPressed('R') ){
             resetPositions();
+            StopGoalCelebrations = true;
         }
         else if ( arena.letterPressed('N') ){
             arena.pause();
             start();
             arena.pause();
+            StopGoalCelebrations = true;
         }
         else if ( arena.letterPressed('G') ){
             if ( this.goalWidth - 5 > this.redMalletSize+this.puckSize){
@@ -365,14 +534,15 @@ public class Game
         }
     }
 
-    public Text appearingMessage(String msg ){
+    // display appearing messages
+    public Text appearingMessage(String msg, String colour){
         Random rand = new Random(); 
         Text message = null;
 
         double x = leftRightIntend*1.5 + rand.nextDouble(width-leftRightIntend*3);
         double y = topBottomIntend*1.5 + rand.nextDouble(height-topBottomIntend*3);
 
-        message = new Text(msg, 40, x, y, "ORANGE", 7 );
+        message = new Text(msg, 40, x, y, colour, 7 );
         arena.addText(message);
         return message; 
     }
@@ -389,14 +559,14 @@ public class Game
         }
     }
 
-    public void playSound(String filename)
+    public void playSound(File filename)
     {   
         Thread t = new Thread(){
             public void run(){
                 try
                 {
                     Clip clip = AudioSystem.getClip();
-                    clip.open(AudioSystem.getAudioInputStream(new File(filename)));
+                    clip.open(AudioSystem.getAudioInputStream(filename));
                     clip.start();
                 }
                 catch (Exception exc)
@@ -443,6 +613,54 @@ public class Game
 
     public Line[] getGoalNet() {
         return goalNet;
+    }
+
+    public void setPuckSize(double puckSize) {
+        this.puckSize = puckSize;
+    }
+
+    public void setCentreSize(double centreSize) {
+        this.centreSize = centreSize;
+    }
+
+    public Line getGoalLeftLine() {
+        return goalLeftLine;
+    }
+
+    public void setGoalLeftLine(Line goalLeftLine) {
+        this.goalLeftLine = goalLeftLine;
+    }
+
+    public Line getGoalRightLine() {
+        return goalRightLine;
+    }
+
+    public void setGoalRightLine(Line goalRightLine) {
+        this.goalRightLine = goalRightLine;
+    }
+
+    public Text[] getCheatCodes() {
+        return cheatCodes;
+    }
+
+    public void setCheatCodes(Text[] cheatCodes) {
+        this.cheatCodes = cheatCodes;
+    }
+
+    public Text[] getGameParams() {
+        return gameParams;
+    }
+
+    public void setGameParams(Text[] gameParams) {
+        this.gameParams = gameParams;
+    }
+
+    public File getBounceSound() {
+        return bounceSound;
+    }
+
+    public void setBounceSound(File bounceSound) {
+        this.bounceSound = bounceSound;
     }
 
     public void setGoalNet(Line[] goalNet) {

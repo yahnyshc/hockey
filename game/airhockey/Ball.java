@@ -265,7 +265,7 @@ public class Ball
 
 	public void deflect( Game hockey, Ball ball2, double[] borderCollision, boolean isBorder)
     {   
-		hockey.playSound("bounce.wav");
+		hockey.playSound(hockey.getBounceSound());
         // The position and speed of each of the two balls in the x and y axis before collision.
         // YOU NEED TO FILL THESE VALUES IN AS APPROPRIATE...
         double xPosition1, xPosition2, yPosition1, yPosition2;

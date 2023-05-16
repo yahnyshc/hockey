@@ -265,6 +265,7 @@ public class Ball
 
 	public void deflect( Game hockey, Ball ball2, double[] borderCollision, boolean isBorder)
     {   
+		hockey.playSound("bounce.wav");
         // The position and speed of each of the two balls in the x and y axis before collision.
         // YOU NEED TO FILL THESE VALUES IN AS APPROPRIATE...
         double xPosition1, xPosition2, yPosition1, yPosition2;
@@ -276,8 +277,9 @@ public class Ball
         if ( isBorder ){
             xPosition2 = borderCollision[0];
             yPosition2 = borderCollision[1];
-            xSpeed2 = -1 * xSpeed1 * 1.3;
-            ySpeed2 = -1 * ySpeed1 * 1.3;
+
+            xSpeed2 = -1 * xSpeed1 * 1.10;
+            ySpeed2 = -1 * ySpeed1 * 1.10;
         }
         else{
             xPosition2 = ball2.getXPosition();
@@ -315,6 +317,7 @@ public class Ball
         // Calculate the final x and y speed settings for the two balls after collision.
         this.setXSpeed( p1FinalTrajectory[0] * mag * hockey.getPuckSpeedMultiplier());
         this.setYSpeed( p1FinalTrajectory[1] * mag * hockey.getPuckSpeedMultiplier());
+		
     }
     /**
     * Converts a vector into a unit vector.

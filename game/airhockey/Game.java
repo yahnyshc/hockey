@@ -1,56 +1,67 @@
 import java.util.Random;
+import javax.sound.sampled.Clip;
+import java.io.File;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 
 public class Game
 {
-    private int width = 1200;
-    private int height = 800;
+    private int width;
+    private int height;
     private GameArena arena;
     private Ball redMallet;
     private Ball blueMallet;
     private Ball puck;
-    private double puckSpeedMultiplier = 0.6;
-    private int[] redMalletStartingPos = {this.width/6, this.height/2};
-    private int[] blueMalletStartingPos = {(this.width/6)*5, this.height/2};
-    private int[] puckStartingPos = {this.width/2, this.height/2};
-    private int redMalletSize = 50;
-    private int blueMalletSize = 50;
-    private int puckSize = 20;
-    private int topBottomIntend = 125;
-    private int leftRightIntend = 100;
-    private int goalWidth = 160;
-    private int gapsWidth = 20;
-    private int centreSize = puckSize+60;
+    private double puckSpeedMultiplier;
+    private int[] redMalletStartingPos;
+    private int[] blueMalletStartingPos;
+    private int[] puckStartingPos;
+    private int redMalletSize;
+    private int blueMalletSize;
+    private double puckSize;
+    private int topBottomIntend;
+    private int leftRightIntend;
+    private int goalWidth;
+    private int gapsWidth;
+    private double centreSize;
     private Line[] borders;
     private double[] arenaGoalLimits;
-    private int bordersThickness = 10;
+    private int bordersThickness;
     private Ball centreIn;
     private Ball centreOut;
     private Line goalLeftLine;
     private Line goalRightLine;
     private Line[] goalNet;
-    private String[] borderColours = {"YELLOW", "GREEN", "RED", "BLUE"};
+    private String[] borderColours;
     private Text redMalletScore;
     private Text blueMalletScore;
     private Text[] cheatCodes;
+    private Text[] gameParams;
 
     public Game(){
+        width = 1200;
+        height = 800;
         this.arena = new GameArena(width, height);
 
-        start();
-
         Text Cheats = new Text("Cheats: ", 20, width/4, height-60, "White", 3 );
-        Text Restart = new Text("1) Press R or N to restart ", 15, width/4+100, height-90, "CYAN", 3 );
+        Text Restart = new Text("1) Press R to reset positions or N to restart ", 15, width/4+100, height-90, "CYAN", 3 );
         Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "CYAN", 3 );
         Text PuckSpeed = new Text("3) Press 'K' to make puck slower  or 'L' to make it faster", 15, width/4+100, height-50, "CYAN", 3 );
         Text GoalSize = new Text("4) Press 'G' to make goal smaller or 'B' to make it bigger", 15, width/4+100, height-30, "CYAN", 3 );
 
         cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize};
+        
+        Text puckSpd = new Text("Puck speed = 0.6", 20, 250, 30, "White", 3 );
+        Text puckSz = new Text("Puck size = 20", 20, 525, 30, "White", 3 );
+        Text goalSz = new Text("Goal size = 160", 20, 775, 30, "White", 3 );
+        
+        gameParams = new Text[]{puckSpd, puckSz, goalSz };
+
+        start();
     }
 
     public void start(){
         arena.clearGameArena();
-        width = 1200;
-        height = 800;
         redMalletStartingPos = new int[]{this.width/6, this.height/2};
         blueMalletStartingPos = new int[]{(this.width/6)*5, this.height/2};
         puckStartingPos = new int[]{this.width/2, this.height/2};
@@ -84,20 +95,34 @@ public class Game
 
         setScore(0,0);
 
-
+        addParams();
     }
+
+    public void resetPositions(){
+        redMallet.setXPosition(redMalletStartingPos[0]);
+        redMallet.setYPosition(redMalletStartingPos[1]);
+        blueMallet.setXPosition(blueMalletStartingPos[0]);
+        blueMallet.setYPosition(blueMalletStartingPos[1]);
+        puck.setXPosition(puckStartingPos[0]);
+        puck.setYPosition(puckStartingPos[1]);
+
+        puck.setXSpeed(0);
+        puck.setYSpeed(0);
+    }
+
+    
     public void setBorders(){
         Line topLeftCornerTop = new Line(leftRightIntend+25, topBottomIntend, width/2-gapsWidth/2, topBottomIntend, bordersThickness, borderColours[0], 3);
-        Line topLeftCornerLeft = new Line(leftRightIntend+25, topBottomIntend, leftRightIntend, height/2-goalWidth/2, bordersThickness, borderColours[0], 3);
+        Line topLeftCornerLeft = new Line(leftRightIntend+25, topBottomIntend, leftRightIntend, height/2-goalWidth/2+2, bordersThickness, borderColours[0], 3);
 
         Line topRightCornerTop = new Line(width-leftRightIntend-25, topBottomIntend, width/2+gapsWidth/2, topBottomIntend, bordersThickness, borderColours[1], 3);
-        Line topRightCornerRight = new Line(width-leftRightIntend-25, topBottomIntend, width - leftRightIntend, height/2-goalWidth/2, bordersThickness, borderColours[1], 3);
+        Line topRightCornerRight = new Line(width-leftRightIntend-25, topBottomIntend, width - leftRightIntend, height/2-goalWidth/2+2, bordersThickness, borderColours[1], 3);
 
         Line bottomRightCornerBottom = new Line(width-leftRightIntend-25, height-topBottomIntend, width/2+gapsWidth/2, height-topBottomIntend, bordersThickness, borderColours[2], 3);
-        Line bottomRightCornerRight = new Line(width-leftRightIntend-25, height-topBottomIntend, width-leftRightIntend, height-height/2+goalWidth/2, bordersThickness, borderColours[2], 3);
+        Line bottomRightCornerRight = new Line(width-leftRightIntend-25, height-topBottomIntend, width-leftRightIntend, height-height/2+goalWidth/2-2, bordersThickness, borderColours[2], 3);
 
         Line bottomLeftCornerBottom = new Line(leftRightIntend+25, height-topBottomIntend, width/2-gapsWidth/2, height-topBottomIntend, bordersThickness, borderColours[3], 3);
-        Line bottomLeftCornerLeft = new Line(leftRightIntend+25, height-topBottomIntend, leftRightIntend, height-height/2+goalWidth/2, bordersThickness, borderColours[3], 3);
+        Line bottomLeftCornerLeft = new Line(leftRightIntend+25, height-topBottomIntend, leftRightIntend, height-height/2+goalWidth/2-2, bordersThickness, borderColours[3], 3);
 
         this.borders = new Line[]{topLeftCornerLeft, topLeftCornerTop, 
             topRightCornerTop, topRightCornerRight, 
@@ -118,14 +143,14 @@ public class Game
     }
 
     public void setGoalNet(){
-        Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "WHITE", 3);
+        Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "WHITE", 2);
         Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 3, "WHITE", 3);
 
-        Line goalRightNetTop = new Line(width - 10, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2-goalWidth/2+5, 3, "WHITE", 3);
-        Line goalLeftNetTop  = new Line(10, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2-goalWidth/2+5, 3, "WHITE", 3);
+        Line goalRightNetTop = new Line(width - 10, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2-goalWidth/2+5, 3, "WHITE", 2);
+        Line goalLeftNetTop  = new Line(10, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2-goalWidth/2+5, 3, "WHITE", 2);
 
-        Line goalRightNetBottom = new Line(width - 10, height/2+goalWidth/2-5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 3, "WHITE", 3);
-        Line goalLeftNetBottom  = new Line(10, height/2+goalWidth/2-5, leftRightIntend+2.5, height/2+goalWidth/2-5, 3, "WHITE", 3);
+        Line goalRightNetBottom = new Line(width - 10, height/2+goalWidth/2-5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 3, "WHITE", 2);
+        Line goalLeftNetBottom  = new Line(10, height/2+goalWidth/2-5, leftRightIntend+2.5, height/2+goalWidth/2-5, 3, "WHITE", 2);
         this.goalNet = new Line[]{goalRightNet, goalLeftNet, 
             goalRightNetTop, goalLeftNetTop, 
             goalRightNetBottom, goalLeftNetBottom
@@ -155,6 +180,12 @@ public class Game
         setGoalNet();
     }
 
+    public void addParams(){
+        for(int i = 0; i < this.gameParams.length; i++){
+            arena.addText(this.gameParams[i]);
+        }
+    }
+
     public void additionalLines(){
         Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
         Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
@@ -162,6 +193,10 @@ public class Game
         arena.addLine(middleLeft);
         arena.addLine(middleRight);
 
+        resetCentreLine();
+    }
+
+    public void resetCentreLine(){
         this.centreOut = new Ball( width/2, height/2, centreSize, "WHITE", 1);
         this.centreIn = new Ball( width/2, height/2, centreSize-2, "BLACK", 2);
         
@@ -193,7 +228,7 @@ public class Game
             }
             
             if(Integer.parseInt(this.getBlueMalletScore().getText()) == 7 || Integer.parseInt(this.getRedMalletScore().getText()) == 7){
-
+                // end game
             }
 
             String[] colours = this.getBorderColours();
@@ -235,11 +270,13 @@ public class Game
             displayCheats();
             while ( arena.letterPressed('C') ){
                 arena.pause();
-                //System.out.println("111");
             };
             hideCheats();
         }
-        if ( arena.letterPressed('R') || arena.letterPressed('N') ){
+        if ( arena.letterPressed('R') ){
+            resetPositions();
+        }
+        else if ( arena.letterPressed('N') ){
             arena.pause();
             start();
             arena.pause();
@@ -275,32 +312,71 @@ public class Game
                 blueMallet.move( 0, -5 );
             }
             pause15ms();
+            gameParams[2].setText("Goal size = "+Integer.toString(this.goalWidth));
             resetBorders();
             resetGoalNet();
         }
         else if ( arena.letterPressed('B') ){
             if ( this.goalWidth + 5 < this.height/2){
                 this.goalWidth += 5;
+                gameParams[2].setText("Goal size = "+Integer.toString(this.goalWidth));
+                resetBorders();
+                resetGoalNet();
             }
             pause15ms();
-            resetBorders();
-            resetGoalNet();
         }
-
+        else if ( arena.letterPressed('K') ){
+            if (puckSpeedMultiplier > 0.5){
+                puckSpeedMultiplier *= 0.95;
+                gameParams[0].setText("Puck speed = "+Double.toString(puckSpeedMultiplier).substring(0,4));
+            }
+            pause15ms();
+        }
+        else if ( arena.letterPressed('L') ){
+            if (puckSpeedMultiplier < 0.9){
+                puckSpeedMultiplier *= 1.05;
+                gameParams[0].setText("Puck speed = "+Double.toString(puckSpeedMultiplier).substring(0,4));
+            }
+            pause15ms();
+        }
+        else if ( arena.letterPressed('H') ){
+            if (puckSize > 15){
+                puckSize *= 0.95;
+                centreSize = puckSize+60;
+                this.puck.setSize(puckSize);
+                arena.removeBall(this.centreOut);
+                arena.removeBall(this.centreIn);
+                resetCentreLine();
+                gameParams[1].setText("Puck size = "+Double.toString(puckSize).substring(0,4));
+            }
+            pause15ms();
+        }
+        else if ( arena.letterPressed('J') ){
+            if (puckSize < 50){
+                puckSize *= 1.05;
+                centreSize = puckSize+60;
+                this.puck.setSize(puckSize);
+                arena.removeBall(this.centreOut);
+                arena.removeBall(this.centreIn);
+                resetCentreLine();
+                gameParams[1].setText("Puck size = "+Double.toString(puckSize).substring(0,4));
+            }
+            pause15ms();
+        }
     }
-
 
     public Text appearingMessage(String msg ){
         Random rand = new Random(); 
         Text message = null;
 
-        double x = leftRightIntend*2 + rand.nextDouble(width-leftRightIntend*4);
-        double y = topBottomIntend*2 + rand.nextDouble(height-topBottomIntend*4);
+        double x = leftRightIntend*1.5 + rand.nextDouble(width-leftRightIntend*3);
+        double y = topBottomIntend*1.5 + rand.nextDouble(height-topBottomIntend*3);
 
-        message = new Text(msg, 40, x, y, "YELLOW", 7 );
+        message = new Text(msg, 40, x, y, "ORANGE", 7 );
         arena.addText(message);
         return message; 
     }
+
     public void displayCheats(){
         for (int i = 0; i < cheatCodes.length; i++){
             arena.addText(cheatCodes[i]);
@@ -313,13 +389,35 @@ public class Game
         }
     }
 
+    public void playSound(String filename)
+    {   
+        Thread t = new Thread(){
+            public void run(){
+                try
+                {
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(AudioSystem.getAudioInputStream(new File(filename)));
+                    clip.start();
+                }
+                catch (Exception exc)
+                {
+                    exc.printStackTrace(System.out);
+                }
+            }
+        };
+        if ( ! t.isAlive() ){
+            t.start();
+        }
+        
+    }
+
     public void hideCheats(){
         for (int i = 0; i < cheatCodes.length; i++){
             arena.removeText(cheatCodes[i]);
         }
     }
 
-    public int getPuckSize() {
+    public double getPuckSize() {
         return puckSize;
     }
 
@@ -506,7 +604,7 @@ public class Game
         this.gapsWidth = gapsWidth;
     }
 
-    public int getCentreSize() {
+    public double getCentreSize() {
         return centreSize;
     }
 

@@ -127,6 +127,13 @@ public class Play{
         else if( hockey.getRedMallet().getXPosition() + hockey.getBlueMallet().getSize()/2 >= hockey.getWidth()/2 ){
             hockey.getRedMallet().move( -xMove, -yMove );
         }
+        else if( hockey.getRedMallet().collides(hockey.getPuck()) ){
+            double[] borderC = hockey.getPuck().collidesBorders(hockey, false);
+            if ( borderC[0]!= 0 && borderC[1]!=0 ){
+                hockey.getRedMallet().move( -xMove, -yMove );
+            }
+        }
+
     }
 
     public static void moveBlueMallet(Game hockey){
@@ -153,6 +160,12 @@ public class Play{
         }
         else if( hockey.getBlueMallet().getXPosition() - hockey.getBlueMallet().getSize()/2 <= hockey.getWidth()/2 ){
             hockey.getBlueMallet().move( -xMove, -yMove );
+        }
+        else if( hockey.getBlueMallet().collides(hockey.getPuck()) ){
+            double[] borderC = hockey.getPuck().collidesBorders(hockey, false);
+            if ( borderC[0]!= 0 && borderC[1]!=0 ){
+                hockey.getBlueMallet().move( -xMove, -yMove );
+            }
         }
     }
 }

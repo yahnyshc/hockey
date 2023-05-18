@@ -4,8 +4,6 @@ public class Play{
     public static void main(String[] args) {
         Game hockey = new Game();
 
-        hockey.getPuck().setXSpeed(0);
-        hockey.getPuck().setYSpeed(0);
         Thread t1 = new Thread() {
             public void run() {
                 hockey.movePuck();

@@ -36,10 +36,13 @@ public class Game
     private Text blueMalletScore; // The blue mallet score
     private Text[] cheatCodes; // The cheat codes array
     private Text[] gameParams; // The game params array
+    private boolean soundMuted = false;
+    private Thread soundThread = null;
     private File bounceSound = new File("bounce.wav"); // The bounce sound file
-    private File winSound = new File("applause.wav"); // The win sound file
+    private File goalSound = new File("applause.wav"); // The win sound file
     private boolean StopGoalCelebrations = false; // The stop goal celebrations flag
-    private int goalsToWin = 6; // The number of goals to win the game
+    private int goalsToWin = 5; // The number of goals to win the game
+
 
     // Constructor of the hockey game
     public Game(){
@@ -53,8 +56,9 @@ public class Game
         Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "CYAN", 3 );
         Text PuckSpeed = new Text("3) Press 'K' to make puck slower  or 'L' to make it faster", 15, width/4+100, height-50, "CYAN", 3 );
         Text GoalSize = new Text("4) Press 'G' to make goal smaller or 'B' to make it bigger", 15, width/4+100, height-30, "CYAN", 3 );
+        Text Mute = new Text("5) Press 'M' to mute the sound", 15, width/4+100, height-10, "CYAN", 3 );
 
-        cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize};
+        cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize, Mute};
         
         // Game parameters by default
         Text puckSpd = new Text("Puck speed = 0.6", 20, 250, 30, "White", 3 );
@@ -393,6 +397,10 @@ public class Game
                 isWin = true;
             }
 
+            if (!soundMuted){
+                playSound(goalSound);
+            }
+
             String[] colours = this.getBorderColours();
             for(int i = 0; i < 8*(isWin ? 30 : 1); i++){
                 if ( StopGoalCelebrations ){
@@ -411,7 +419,7 @@ public class Game
                 arena.removeText(goalMessage);
             }
             
-
+            // who scored - set puck position
             int xPosition = this.getWidth()/2;
             if (this.getPuck().getXPosition() + this.getPuck().getSize()/2 < this.getArenaGoalLimits()[0]){
                 xPosition -= 150; 
@@ -532,6 +540,11 @@ public class Game
             }
             pause15ms();
         }
+        else if ( arena.letterPressed('M') ){
+            soundMuted = !soundMuted;
+            pause15ms();
+            pause15ms();
+        }
     }
 
     // display appearing messages
@@ -559,9 +572,11 @@ public class Game
         }
     }
 
+    
+
     public void playSound(File filename)
     {   
-        Thread t = new Thread(){
+        Thread thread = new Thread(){
             public void run(){
                 try
                 {
@@ -575,16 +590,43 @@ public class Game
                 }
             }
         };
-        if ( ! t.isAlive() ){
-            t.start();
+
+        if(soundThread == null){
+            soundThread = thread;
         }
-        
+        if (!soundThread.isAlive()){
+            thread.start();
+        }
     }
 
     public void hideCheats(){
         for (int i = 0; i < cheatCodes.length; i++){
             arena.removeText(cheatCodes[i]);
         }
+    }
+
+    public Thread getSoundThread() {
+        return soundThread;
+    }
+
+    public void setSoundThread(Thread soundThread) {
+        this.soundThread = soundThread;
+    }
+
+    public File getGoalSound() {
+        return goalSound;
+    }
+
+    public void setGoalSound(File goalSound) {
+        this.goalSound = goalSound;
+    }
+
+    public boolean isStopGoalCelebrations() {
+        return StopGoalCelebrations;
+    }
+
+    public void setStopGoalCelebrations(boolean stopGoalCelebrations) {
+        StopGoalCelebrations = stopGoalCelebrations;
     }
 
     public double getPuckSize() {
@@ -609,6 +651,22 @@ public class Game
 
     public void setBlueMalletScore(Text blueMalletScore) {
         this.blueMalletScore = blueMalletScore;
+    }
+
+    public boolean isSoundMuted() {
+        return soundMuted;
+    }
+
+    public void setSoundMuted(boolean soundMuted) {
+        this.soundMuted = soundMuted;
+    }
+
+    public int getGoalsToWin() {
+        return goalsToWin;
+    }
+
+    public void setGoalsToWin(int goalsToWin) {
+        this.goalsToWin = goalsToWin;
     }
 
     public Line[] getGoalNet() {

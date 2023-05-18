@@ -255,6 +255,7 @@ public class Ball
 		return new double[]{0,0};
 	}
 
+	// determines where the ball hits the line
 	public double[] getSpPoint(Line line, Ball ball){
 		double x1=line.getXStart(), y1=line.getYStart(), x2=line.getXEnd(), y2=line.getYEnd(), x3=ball.getXPosition(), y3=ball.getYPosition();
 		double px = x2-x1, py = y2-y1, dAB = px*px + py*py;
@@ -263,11 +264,16 @@ public class Ball
 		return new double[]{x, y}; //this is D
 	}
 
+	// hockey - game
+	// ball2 - ball that it colides
+	// borderCollision - point of collision
+	// isBorder - flag if its border collision or ball colision
 	public void deflect( Game hockey, Ball ball2, double[] borderCollision, boolean isBorder)
     {   
-		hockey.playSound(hockey.getBounceSound());
+		if (!hockey.isSoundMuted()){
+			hockey.playSound(hockey.getBounceSound());
+		}
         // The position and speed of each of the two balls in the x and y axis before collision.
-        // YOU NEED TO FILL THESE VALUES IN AS APPROPRIATE...
         double xPosition1, xPosition2, yPosition1, yPosition2;
         double xSpeed1, xSpeed2, ySpeed1, ySpeed2;
         xPosition1 = this.getXPosition();

@@ -3,6 +3,9 @@ import javax.sound.sampled.Clip;
 import java.io.File;
 import javax.sound.sampled.AudioSystem;
 
+/**
+ * A class of the hockey game and its methods and fields
+ */
 public class Game
 {
     private int width;  // The width of the game arena
@@ -44,7 +47,9 @@ public class Game
     private int goalsToWin = 5; // The number of goals to win the game
 
 
-    // Constructor of the hockey game
+    /**
+     * Constructor
+     */
     public Game(){
         width = 1200;
         height = 800;
@@ -71,7 +76,9 @@ public class Game
         start();
     }
 
-    // Method to set variables
+    /**
+     * set variables and objects to default values
+     */
     public void start(){
         // remove if somthing present on the game arena
         arena.clearGameArena();
@@ -111,7 +118,9 @@ public class Game
         addParams();
     }
 
-    // function to constantly move the puck
+    /** 
+     * Update puck position
+     */
     public void movePuck(){
         // array to have postion of ball collision with the wall to reflect the ball
         double[] borderCollision = {0,0};
@@ -146,7 +155,7 @@ public class Game
             puck.move(puck.getXSpeed(), puck.getYSpeed());
 
             // find collision point (if no colision return 0,0)
-            borderCollision = puck.collidesBorders(this, true);
+            borderCollision = puck.collidesBorders(this);
             if (! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
                 puck.deflect(this, puck, borderCollision, true);
                 // don't let balls go into each other
@@ -176,7 +185,9 @@ public class Game
         }
     }
 
-    // move red mallet
+    /** 
+     * Update red mallet position
+     */
     public void moveRedMallet(){
         boolean w = arena.letterPressed('W');
         boolean a = arena.letterPressed('A');
@@ -214,7 +225,9 @@ public class Game
 
     }
 
-    // move blue mallet
+    /** 
+     * Update blue mallet position
+     */
     public void moveBlueMallet(){
         boolean up = arena.upPressed();
         boolean left = arena.leftPressed();
@@ -248,7 +261,10 @@ public class Game
         }
     }
 
-    // reset balls positions
+    
+    /** 
+     * Reset mallets and puck positions
+     */
     public void resetPositions(){
         redMallet.setXPosition(redMalletStartingPos[0]);
         redMallet.setYPosition(redMalletStartingPos[1]);
@@ -261,7 +277,10 @@ public class Game
         puck.setYSpeed(0);
     }
 
-    // create arena borders
+    
+    /** 
+     * Create arena borders
+     */
     public void setBorders(){
         Line topLeftCornerTop = new Line(leftRightIntend+25, topBottomIntend, width/2-gapsWidth/2, topBottomIntend, bordersThickness, borderColours[0], 3);
         Line topLeftCornerLeft = new Line(leftRightIntend+25, topBottomIntend, leftRightIntend, height/2-goalWidth/2+2, bordersThickness, borderColours[0], 3);
@@ -286,7 +305,9 @@ public class Game
         }
     }
 
-    // remove borders
+    /**
+     * Remove arena borders
+     */
     public void resetBorders(){
         for (int i = 0; i < borders.length; i++ ){
             arena.removeLine(borders[i]);
@@ -294,7 +315,9 @@ public class Game
         setBorders();
     }
 
-    // create goal net
+    /**
+     * Create arena goal nets
+     */
     public void setGoalNet(){
         Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "WHITE", 2);
         Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 3, "WHITE", 3);
@@ -322,7 +345,9 @@ public class Game
         arena.addLine(goalRightLine);
     }
 
-    // remove goal net
+    /**
+     * remove goal net and set again with updated positions
+     */
     public void resetGoalNet(){
         for (int i = 0; i < this.goalNet.length; i++ ){
             arena.removeLine(this.goalNet[i]);
@@ -334,14 +359,18 @@ public class Game
         setGoalNet();
     }
 
-    // output game parameters
+    /**
+     * Display game parameters such as puck size, speed and goal size
+     */
     public void addParams(){
         for(int i = 0; i < this.gameParams.length; i++){
             arena.addText(this.gameParams[i]);
         }
     }
 
-    // add additional design lines
+    /**
+     * add additional design lines
+     */
     public void additionalLines(){
         Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
         Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
@@ -352,6 +381,9 @@ public class Game
         resetCentreLine();
     }
 
+    /**
+     * reset centre circle
+     */
     public void resetCentreLine(){
         this.centreOut = new Ball( width/2, height/2, centreSize, "WHITE", 1);
         this.centreIn = new Ball( width/2, height/2, centreSize-2, "BLACK", 2);
@@ -360,7 +392,11 @@ public class Game
         arena.addBall(centreOut); 
     }
 
-    // set score to s1 and s2
+    /**
+     * sets game score to given params
+     * @param s1 score of red mallet
+     * @param s2 score of blue mallet
+     */
     public void setScore(int s1, int s2){
         String score1 = Integer.toString(s1);
         String score2 = Integer.toString(s2);
@@ -372,7 +408,9 @@ public class Game
         arena.addText(blueMalletScore);
     }   
 
-    // check if it is a goal
+    /**
+     * Checks if it is goal and display celebrations if it is
+     */
     public void checkGoal(){
         boolean redScored = this.getPuck().getXPosition() - this.getPuck().getSize()/2 - 2 > this.getArenaGoalLimits()[1];
         boolean blueScored = this.getPuck().getXPosition() + this.getPuck().getSize()/2 + 2 < this.getArenaGoalLimits()[0];
@@ -439,7 +477,9 @@ public class Game
         }
     }
 
-    // check if cheats are used
+    /**
+     * Checks cheats usage
+     */
     public void checkCheat(){
         if ( arena.letterPressed('C') ){
             displayCheats();
@@ -547,7 +587,9 @@ public class Game
         }
     }
 
-    // display appearing messages
+    /**
+     * Display apearing message
+     */
     public Text appearingMessage(String msg, String colour){
         Random rand = new Random(); 
         Text message = null;
@@ -572,8 +614,10 @@ public class Game
         }
     }
 
-    
-
+    /**
+     * play sound
+     * @param filename file to get sound from
+     */
     public void playSound(File filename)
     {   
         Thread thread = new Thread(){

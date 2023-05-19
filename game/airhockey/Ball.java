@@ -195,9 +195,10 @@ public class Ball
 	 * Determines if this Ball hits the borders.
 	 * 
 	 * @param hockey hockey game object
-	 * @return true if this ball hits the border
+	 * @return point where the ball hits the border
+	 * else returns {0,0} array
 	 */
-	public double[] collidesBorders(Game hockey, boolean checkGoal)
+	public double[] collidesBorders(Game hockey)
 	{	
 		double shortestDist = 10000;
 		Line border = hockey.getBorders()[0];
@@ -255,7 +256,12 @@ public class Ball
 		return new double[]{0,0};
 	}
 
-	// determines where the ball hits the line
+	/**
+	 * Determines where the ball hits the border
+	 * @param line - border
+	 * @param ball - puck or mallet
+	 * @return returns where the ball hits the line
+	 */
 	public double[] getSpPoint(Line line, Ball ball){
 		double x1=line.getXStart(), y1=line.getYStart(), x2=line.getXEnd(), y2=line.getYEnd(), x3=ball.getXPosition(), y3=ball.getYPosition();
 		double px = x2-x1, py = y2-y1, dAB = px*px + py*py;
@@ -264,10 +270,13 @@ public class Ball
 		return new double[]{x, y}; //this is D
 	}
 
-	// hockey - game
-	// ball2 - ball that it colides
-	// borderCollision - point of collision
-	// isBorder - flag if its border collision or ball colision
+	/**
+	 * deflects the ball
+	 * @param hockey the game
+	 * @param ball2 ball that it colides
+	 * @param borderCollision point of collision
+	 * @param isBorder flag if its border collision or ball colision
+	 */
 	public void deflect( Game hockey, Ball ball2, double[] borderCollision, boolean isBorder)
     {   
 		if (!hockey.isSoundMuted()){

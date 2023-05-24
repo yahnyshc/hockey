@@ -209,7 +209,7 @@ public class Game
 
         redMallet.move( xMove, yMove );
         
-        double[] borderCollision = redMallet.collidesBorders(this, true);
+        double[] borderCollision = redMallet.collidesBorders(this);
         if( ! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
             redMallet.move( -xMove, -yMove );
         }
@@ -217,7 +217,7 @@ public class Game
             redMallet.move( -xMove, -yMove );
         }
         else if( redMallet.collides(puck) ){
-            double[] borderC = puck.collidesBorders(this, false);
+            double[] borderC = puck.collidesBorders(this);
             if ( borderC[0]!= 0 && borderC[1]!=0 ){
                 redMallet.move( -xMove, -yMove );
             }
@@ -246,7 +246,7 @@ public class Game
         blueMallet.setYSpeed(yMove);
 
         blueMallet.move( xMove, yMove );
-        double[] borderCollision = blueMallet.collidesBorders(this, true);
+        double[] borderCollision = blueMallet.collidesBorders(this);
         if( ! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
             blueMallet.move( -xMove, -yMove );
         }
@@ -254,7 +254,7 @@ public class Game
             blueMallet.move( -xMove, -yMove );
         }
         else if( blueMallet.collides(puck) ){
-            double[] borderC = puck.collidesBorders(this, false);
+            double[] borderC = puck.collidesBorders(this);
             if ( borderC[0]!= 0 && borderC[1]!=0 ){
                 blueMallet.move( -xMove, -yMove );
             }

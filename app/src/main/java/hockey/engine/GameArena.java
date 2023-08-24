@@ -6,7 +6,6 @@ import engine.Line;
 import engine.Text;
 import engine.Rectangle;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;

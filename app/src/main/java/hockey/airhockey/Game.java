@@ -131,7 +131,7 @@ public class Game
      */
     public void movePuck(){
         // array to have postion of ball collision with the wall to reflect the ball
-        double[] borderCollision = {0,0};
+        double[] collision = {0,0};
         // friction to slow down th puck
         double friction = 0.99973;
         double prevXpos = 0;
@@ -156,16 +156,23 @@ public class Game
             // Celebration in case of goal or win
             checkGoal();
 
-            borderCollision[0] = 0;
-            borderCollision[1] = 0;
+            collision[0] = 0;
+            collision[1] = 0;
 
             // move puck
             puck.move(puck.getXSpeed(), puck.getYSpeed());
 
             // find collision point (if no colision return 0,0)
-            borderCollision = puck.collidesBorders(this);
-            if (! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
-                puck.deflect(this, puck, borderCollision, true);
+            double[] bordersCollision = puck.collidesBorders(this);
+            double[] goalNetCollision = puck.collidesGoalNet(this);
+            boolean collides = false; 
+            if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) || 
+                ! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
+                collides = true;
+            }
+
+            if ( collides ){
+                puck.deflect(this, puck, collision, true);
                 // don't let balls go into each other
                 if ( puck.collides( redMallet) ){
                     redMallet.move( puck.getXSpeed()*5, puck.getYSpeed()*5 );
@@ -180,10 +187,10 @@ public class Game
                 blueMallet.move( redMallet.getXSpeed()*5, redMallet.getYSpeed()*5 );
             }
             else if ( puck.collides( blueMallet ) ){
-                puck.deflect(this, blueMallet, borderCollision, false);
+                puck.deflect(this, blueMallet, collision, false);
             }
             else if( puck.collides( redMallet ) ){
-                puck.deflect(this, redMallet, borderCollision, false);
+                puck.deflect(this, redMallet, collision, false);
             }
             // apply friction
             puck.setXSpeed(puck.getXSpeed() * friction);
@@ -217,8 +224,16 @@ public class Game
 
         redMallet.move( xMove, yMove );
         
-        double[] borderCollision = redMallet.collidesBorders(this);
-        if( ! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
+        // find collision point (if no colision return 0,0)
+        double[] bordersCollision = redMallet.collidesBorders(this);
+        double[] goalNetCollision = redMallet.collidesGoalNet(this);
+        boolean collides = false; 
+        if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) || 
+            ! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
+            collides = true;
+        }
+
+        if( collides ){
             redMallet.move( -xMove, -yMove );
         }
         else if( redMallet.getXPosition() + blueMallet.getSize()/2 >= getWidth()/2 ){
@@ -254,8 +269,17 @@ public class Game
         blueMallet.setYSpeed(yMove);
 
         blueMallet.move( xMove, yMove );
-        double[] borderCollision = blueMallet.collidesBorders(this);
-        if( ! (borderCollision[0] == 0 && borderCollision[1] == 0) ){
+        
+        // find collision point (if no colision return 0,0)
+        double[] bordersCollision = blueMallet.collidesBorders(this);
+        double[] goalNetCollision = blueMallet.collidesGoalNet(this);
+        boolean collides = false; 
+        if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) || 
+            ! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
+            collides = true;
+        }
+
+        if( collides ){
             blueMallet.move( -xMove, -yMove );
         }
         else if( blueMallet.getXPosition() - blueMallet.getSize()/2 <= getWidth()/2 ){

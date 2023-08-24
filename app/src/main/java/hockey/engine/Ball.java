@@ -207,23 +207,24 @@ public class Ball
 	 */
 	public double[] collidesBorders(Game hockey)
 	{	
-		double shortestDist = 10000;
-		Line border = hockey.getBorders()[0];
+		double shortestDist = Double.POSITIVE_INFINITY;
+		int collisionBorderIndex = 0;
+		Line[] borders = hockey.getBorders();
 
-		for(int i = 0; i < hockey.getBorders().length; i++){
-			double x1 = hockey.getBorders()[i].getXStart();
-			double y1 = hockey.getBorders()[i].getYStart();
-			double x2 = hockey.getBorders()[i].getXEnd();
-			double y2 = hockey.getBorders()[i].getYEnd();
+		for(int i = 0; i < borders.length; i++){
+			double borderStartX = borders[i].getXStart();
+			double borderStartY = borders[i].getYStart();
+			double borderEndX = borders[i].getXEnd();
+			double borderEndY = borders[i].getYEnd();
 
-			double a = y1-y2;
-			double b = x2-x1;
-			double c = (x1-x2)*y1 + (y2-y1)*x1;
+			double a = borderStartY-borderEndY;
+			double b = borderEndX-borderStartX;
+			double c = (borderStartX-borderEndX)*borderStartY + (borderEndY-borderStartY)*borderStartX;
 
 			double distance = Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
 			if ( distance < shortestDist){
 				shortestDist = distance;
-				border = hockey.getBorders()[i];
+				collisionBorderIndex = i;
 			}
 		}
 		if ( shortestDist - hockey.getBordersThickness()/2 < this.size/2 
@@ -231,25 +232,38 @@ public class Ball
 			&& (this.getXPosition() < hockey.getArenaGoalLimits()[1])
 			&& (this.getYPosition() - this.getSize()/2 <= hockey.getHeight()/2-hockey.getGoalWidth()/2 
 			|| this.getYPosition() + this.getSize()/2 >= hockey.getHeight()/2+hockey.getGoalWidth()/2)){
-			return getSpPoint(border, this);
+			return collisionPoint(borders[collisionBorderIndex], this);
 		}
+		return new double[]{0,0};
+	}
 
-		shortestDist = 10000;
-		border = hockey.getGoalNet()[0];
-		for(int i = 0; i < hockey.getGoalNet().length; i++){
-			double x1 = hockey.getGoalNet()[i].getXStart();
-			double y1 = hockey.getGoalNet()[i].getYStart();
-			double x2 = hockey.getGoalNet()[i].getXEnd();
-			double y2 = hockey.getGoalNet()[i].getYEnd();
+	/**
+	 * Determines if this Ball gets in the net.
+	 * 
+	 * @param hockey hockey game object
+	 * @return point where the ball hits the net
+	 * else returns {0,0} array
+	 */
+	public double[] collidesGoalNet(Game hockey)
+	{	
+		double shortestDist = Double.POSITIVE_INFINITY;
+		int collisionNetIndex = 0;
+		Line[] goalNet = hockey.getGoalNet();
+
+		for(int i = 0; i < goalNet.length; i++){
+			double x1 = goalNet[i].getXStart();
+			double y1 = goalNet[i].getYStart();
+			double x2 = goalNet[i].getXEnd();
+			double y2 = goalNet[i].getYEnd();
 
 			double a = y1-y2;
 			double b = x2-x1;
 			double c = (x1-x2)*y1 + (y2-y1)*x1;
 
 			double distance = Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
-			if ( distance < shortestDist){
+			if ( distance < shortestDist ){
 				shortestDist = distance;
-				border = hockey.getGoalNet()[i];
+				collisionNetIndex = i;
 			}
 		}
 
@@ -258,8 +272,9 @@ public class Ball
 			|| this.getXPosition() >= hockey.getArenaGoalLimits()[1])
 			&& (this.getYPosition() - this.getSize()/2 >= hockey.getHeight()/2-hockey.getGoalWidth()/2 )
 			&& (this.getYPosition() + this.getSize()/2 <= hockey.getHeight()/2+hockey.getGoalWidth()/2 )){
-				return getSpPoint(border, this);
+			return collisionPoint(goalNet[collisionNetIndex], this);
 		}
+
 		return new double[]{0,0};
 	}
 
@@ -269,7 +284,7 @@ public class Ball
 	 * @param ball - puck or mallet
 	 * @return returns where the ball hits the line
 	 */
-	public double[] getSpPoint(Line line, Ball ball){
+	public double[] collisionPoint(Line line, Ball ball){
 		double x1=line.getXStart(), y1=line.getYStart(), x2=line.getXEnd(), y2=line.getYEnd(), x3=ball.getXPosition(), y3=ball.getYPosition();
 		double px = x2-x1, py = y2-y1, dAB = px*px + py*py;
 		double u = ((x3 - x1) * px + (y3 - y1) * py) / dAB;

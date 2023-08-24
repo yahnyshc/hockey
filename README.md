@@ -1,3 +1,12 @@
+To run the game:
+
+1) Clone the repository
+2) build the game using 
+./gradlew build
+3) run the game using
+./gradlew run
+
+
 The Game implements air hockey.
 There are two mallets, and one puck.
 To win, a red or blue player have to score 7 goals.

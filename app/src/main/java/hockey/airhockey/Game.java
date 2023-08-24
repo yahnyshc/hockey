@@ -166,8 +166,12 @@ public class Game
             double[] bordersCollision = puck.collidesBorders(this);
             double[] goalNetCollision = puck.collidesGoalNet(this);
             boolean collides = false; 
-            if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) || 
-                ! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
+            if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) ){
+                collision = bordersCollision;
+                collides = true;
+            }
+            if (! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
+                collision = goalNetCollision;
                 collides = true;
             }
 
@@ -292,6 +296,9 @@ public class Game
             }
         }
     }
+
+
+
 
     
     /** 

@@ -296,13 +296,13 @@ public class Ball
 	 * deflects the ball
 	 * @param hockey the game
 	 * @param ball2 ball that it colides
-	 * @param borderCollision point of collision
+	 * @param collision point of collision
 	 * @param isBorder flag if its border collision or ball colision
 	 */
-	public void deflect( Game hockey, Ball ball2, double[] borderCollision, boolean isBorder)
+	public void deflect( Game hockey, Ball ball2, double[] collision, boolean isBorder)
     {   
 		if (!hockey.isSoundMuted()){
-			hockey.playSound(hockey.getBounceSound());
+			//hockey.playSound(hockey.getBounceSound());
 		}
         // The position and speed of each of the two balls in the x and y axis before collision.
         double xPosition1, xPosition2, yPosition1, yPosition2;
@@ -312,30 +312,37 @@ public class Ball
         xSpeed1 = this.getXSpeed();
         ySpeed1 = this.getYSpeed();
         if ( isBorder ){
-            xPosition2 = borderCollision[0];
-            yPosition2 = borderCollision[1];
+            xPosition2 = collision[0];
+            yPosition2 = collision[1];
 
-            xSpeed2 = -1 * xSpeed1 * 1.10;
-            ySpeed2 = -1 * ySpeed1 * 1.10;
+            xSpeed2 = -1 * this.getXSpeed() * 1.10;
+            ySpeed2 = -1 * this.getYSpeed() * 1.10;
         }
         else{
             xPosition2 = ball2.getXPosition();
             yPosition2 = ball2.getYPosition();
             xSpeed2 = ball2.getXSpeed();
             ySpeed2 = ball2.getYSpeed();
-            if( (xSpeed1 != 0 || ySpeed1 != 0) && (xSpeed2 == 0 && ySpeed2 == 0) ){
-                xSpeed2 = -1 * xSpeed1;
-                ySpeed2 = -1 * ySpeed1;
+            if( (this.getXSpeed() != 0 || this.getYSpeed() != 0) && (xSpeed2 == 0 && ySpeed2 == 0) ){
+                xSpeed2 = -1 * this.getXSpeed();
+                ySpeed2 = -1 * this.getYSpeed();
             }
         }
-        // Calculate initial momentum of the balls... We assume unit mass here.
-        double p1InitialMomentum = Math.sqrt(xSpeed1 * xSpeed1 + ySpeed1 * ySpeed1);
+		double[] momentumSpeed = deflectionMomentum(hockey, xPosition2, yPosition2, xSpeed2, ySpeed2);
+        this.setXSpeed( momentumSpeed[0] );
+        this.setYSpeed( momentumSpeed[1] );
+		
+    }
+
+	private double[] deflectionMomentum(Game hockey, double xPosition2, double yPosition2, double xSpeed2, double ySpeed2){
+		// Calculate initial momentum of the balls... We assume unit mass here.
+        double p1InitialMomentum = Math.sqrt(this.getXSpeed() * this.getXSpeed() + this.getYSpeed() * this.getYSpeed());
         double p2InitialMomentum = Math.sqrt(xSpeed2 * xSpeed2 + ySpeed2 * ySpeed2);
         // calculate motion vectors
-        double[] p1Trajectory = {xSpeed1, ySpeed1};
+        double[] p1Trajectory = {this.getXSpeed(), this.getYSpeed()};
         double[] p2Trajectory = {xSpeed2, ySpeed2};
         // Calculate Impact Vector
-        double[] impactVector = {xPosition2 - xPosition1, yPosition2 - yPosition1};
+        double[] impactVector = {xPosition2 - this.getXPosition(), yPosition2 - this.getYPosition()};
         double[] impactVectorNorm = normalizeVector(impactVector);
         // Calculate scalar product of each trajectory and impact vector
         double p1dotImpact = Math.abs(p1Trajectory[0] * impactVectorNorm[0] + p1Trajectory[1] * impactVectorNorm[1]);
@@ -352,10 +359,10 @@ public class Ball
         // Scale the resultant trajectories if we've accidentally broken the laws of physics.
         double mag = (p1InitialMomentum + p2InitialMomentum) / (p1FinalMomentum + p2FinalMomentum);
         // Calculate the final x and y speed settings for the two balls after collision.
-        this.setXSpeed( p1FinalTrajectory[0] * mag * hockey.getPuckSpeedMultiplier());
-        this.setYSpeed( p1FinalTrajectory[1] * mag * hockey.getPuckSpeedMultiplier());
-		
-    }
+		double puckSpeedMultiplier = hockey.getPuckSpeedMultiplier();
+		return new double[]{p1FinalTrajectory[0] * mag * puckSpeedMultiplier, p1FinalTrajectory[1] * mag * puckSpeedMultiplier};
+	}
+
     /**
     * Converts a vector into a unit vector.
     * Used by the deflect() method to calculate the resultant direction after a collision.

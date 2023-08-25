@@ -16,7 +16,7 @@ public class Play{
         Thread t2 = new Thread() {
             public void run() {
                 while(true){
-                    hockey.moveRedMallet();
+                    hockey.moveMallet(hockey.getRedMallet());
                     try { sleep(3); }
 		            catch (Exception e) {};
                 }
@@ -27,7 +27,7 @@ public class Play{
         Thread t3 = new Thread() {
             public void run() {
                 while(true){
-                    hockey.moveBlueMallet();
+                    hockey.moveMallet(hockey.getBlueMallet());
                     try { sleep(3); }
 		            catch (Exception e) {};
                 }

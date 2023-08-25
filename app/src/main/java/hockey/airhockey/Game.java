@@ -105,8 +105,8 @@ public class Game
         bordersThickness = 10;
         borderColours = new String[]{"YELLOW", "GREEN", "RED", "BLUE"};
 
-        this.redMallet = new Ball(redMalletStartingPos[0], redMalletStartingPos[1], redMalletSize, "RED", 3);
-        this.blueMallet = new Ball(blueMalletStartingPos[0], blueMalletStartingPos[1], blueMalletSize, "BLUE", 3);
+        this.redMallet = new Ball(redMalletStartingPos[0], redMalletStartingPos[1], redMalletSize, "RED", 3, 1);
+        this.blueMallet = new Ball(blueMalletStartingPos[0], blueMalletStartingPos[1], blueMalletSize, "BLUE", 3, 2);
 
         arena.addBall(redMallet);
         arena.addBall(blueMallet);
@@ -205,61 +205,13 @@ public class Game
     }
 
     /** 
-     * Update red mallet position
+     * Update mallet position
      */
-    public void moveRedMallet(){
-        boolean w = arena.letterPressed('W');
-        boolean a = arena.letterPressed('A');
-        boolean s = arena.letterPressed('S');
-        boolean d = arena.letterPressed('D');
-        
-        // determine x direction
-        int xMove = 0;
-        xMove += d ? 1 : 0;
-        xMove += a ? -1 : 0;
-
-        // determine y direction
-        int yMove = 0;
-        yMove += s ? 1 : 0;
-        yMove += w ? -1 : 0;
-
-        redMallet.setXSpeed(xMove);
-        redMallet.setYSpeed(yMove);
-
-        redMallet.move( xMove, yMove );
-        
-        // find collision point (if no colision return 0,0)
-        double[] bordersCollision = redMallet.collidesBorders(this);
-        double[] goalNetCollision = redMallet.collidesGoalNet(this);
-        boolean collides = false; 
-        if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) || 
-            ! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
-            collides = true;
-        }
-
-        if( collides ){
-            redMallet.move( -xMove, -yMove );
-        }
-        else if( redMallet.getXPosition() + blueMallet.getSize()/2 >= getWidth()/2 ){
-            redMallet.move( -xMove, -yMove );
-        }
-        else if( redMallet.collides(puck) ){
-            double[] borderC = puck.collidesBorders(this);
-            if ( borderC[0]!= 0 && borderC[1]!=0 ){
-                redMallet.move( -xMove, -yMove );
-            }
-        }
-
-    }
-
-    /** 
-     * Update blue mallet position
-     */
-    public void moveBlueMallet(){
-        boolean up = arena.upPressed();
-        boolean left = arena.leftPressed();
-        boolean right = arena.rightPressed();
-        boolean down = arena.downPressed();
+    public void moveMallet(Ball mallet){
+        boolean up = mallet.moveUp(arena);
+        boolean left = mallet.moveLeft(arena);
+        boolean right = mallet.moveRight(arena);
+        boolean down = mallet.moveDown(arena);
 
         int xMove = 0;
         xMove += right ? 1 : 0;
@@ -269,14 +221,14 @@ public class Game
         yMove += down ? 1 : 0;
         yMove += up ? -1 : 0;
 
-        blueMallet.setXSpeed(xMove);
-        blueMallet.setYSpeed(yMove);
+        mallet.setXSpeed(xMove);
+        mallet.setYSpeed(yMove);
 
-        blueMallet.move( xMove, yMove );
+        mallet.move( xMove, yMove );
         
         // find collision point (if no colision return 0,0)
-        double[] bordersCollision = blueMallet.collidesBorders(this);
-        double[] goalNetCollision = blueMallet.collidesGoalNet(this);
+        double[] bordersCollision = mallet.collidesBorders(this);
+        double[] goalNetCollision = mallet.collidesGoalNet(this);
         boolean collides = false; 
         if (! (bordersCollision[0] == 0 && bordersCollision[1] == 0) || 
             ! (goalNetCollision[0] == 0 && goalNetCollision[1] == 0) ){
@@ -284,22 +236,18 @@ public class Game
         }
 
         if( collides ){
-            blueMallet.move( -xMove, -yMove );
+            mallet.move( -xMove, -yMove );
         }
-        else if( blueMallet.getXPosition() - blueMallet.getSize()/2 <= getWidth()/2 ){
-            blueMallet.move( -xMove, -yMove );
+        else if( mallet.crossesMiddleLine(arena) ){
+            mallet.move( -xMove, -yMove );
         }
-        else if( blueMallet.collides(puck) ){
+        else if( mallet.collides(puck) ){
             double[] borderC = puck.collidesBorders(this);
             if ( borderC[0]!= 0 && borderC[1]!=0 ){
-                blueMallet.move( -xMove, -yMove );
+                mallet.move( -xMove, -yMove );
             }
         }
     }
-
-
-
-
     
     /** 
      * Reset mallets and puck positions

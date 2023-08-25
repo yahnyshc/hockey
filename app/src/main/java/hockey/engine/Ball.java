@@ -24,6 +24,7 @@ public class Ball
 	private String colour;				// The colour of this Ball
 	private double xSpeed = 0;
 	private double ySpeed = 0;
+	private int player;
 
 										// Permissible colours are:
 										// BLACK, BLUE, CYAN, DARKGREY, GREY,
@@ -37,13 +38,13 @@ public class Ball
 	 * @param diameter The diameter of the Ball (in pixels)
 	 * @param col The colour of the Ball (Permissible colours are: BLACK, BLUE, CYAN, DARKGREY, GREY, GREEN, LIGHTGREY, MAGENTA, ORANGE, PINK, RED, WHITE, YELLOW or BROWN)
 	 */
-	public Ball(double x, double y, double diameter, String col)
+	public Ball(double x, double y, double diameter, String col, int layer)
 	{
 		this.xPosition = x;
 		this.yPosition = y;
 		this.size = diameter;
 		this.colour = col;
-		this.layer = 0;
+		this.layer = layer;
 	}	
 
 	/**
@@ -54,15 +55,45 @@ public class Ball
 	 * @param col The colour of the Ball (Permissible colours are: BLACK, BLUE, CYAN, DARKGREY, GREY, GREEN, LIGHTGREY, MAGENTA, ORANGE, PINK, RED, WHITE, YELLOW or BROWN)
 	 * @param layer The layer this ball is to be drawn on. Objects with a higher layer number are always drawn on top of those with lower layer numbers.
 	 */
-	public Ball(double x, double y, double diameter, String col, int layer)
+	public Ball(double x, double y, double diameter, String col, int layer, int player)
 	{
 		this.xPosition = x;
 		this.yPosition = y;
 		this.size = diameter;
 		this.colour = col;
 		this.layer = layer;
+		this.player = player;
 	}	
 
+	public boolean moveUp(GameArena arena){
+		if (player == 1) {return arena.letterPressed('W');}
+		if (player == 2) {return arena.upPressed();}
+		return false;
+	}
+
+	public boolean moveLeft(GameArena arena){
+		if (player == 1) {return arena.letterPressed('A');}
+		if (player == 2) {return arena.leftPressed();}
+		return false;
+	}
+	
+	public boolean moveRight(GameArena arena){
+		if (player == 1) {return arena.letterPressed('D');}
+		if (player == 2) {return arena.rightPressed();}
+		return false;
+	}
+	
+	public boolean moveDown(GameArena arena){
+		if (player == 1) {return arena.letterPressed('S');}
+		if (player == 2) {return arena.downPressed();}
+		return false;
+	}
+
+	public boolean crossesMiddleLine(GameArena arena){
+		if (player == 1) { return (this.getXPosition() + this.getSize()/2 >= arena.getWidth()/2); }
+		if (player == 2) { return (this.getXPosition() - this.getSize()/2 <= arena.getWidth()/2); }
+		return false;
+	}
 
 	public double getXSpeed() {
 		return xSpeed;

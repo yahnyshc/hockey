@@ -238,32 +238,9 @@ public class Ball
 	 */
 	public double[] collidesBorders(Game hockey)
 	{	
-		double shortestDist = Double.POSITIVE_INFINITY;
-		int collisionBorderIndex = 0;
-		Line[] borders = hockey.getBorders();
-
-		for(int i = 0; i < borders.length; i++){
-			double borderStartX = borders[i].getXStart();
-			double borderStartY = borders[i].getYStart();
-			double borderEndX = borders[i].getXEnd();
-			double borderEndY = borders[i].getYEnd();
-
-			double a = borderStartY-borderEndY;
-			double b = borderEndX-borderStartX;
-			double c = (borderStartX-borderEndX)*borderStartY + (borderEndY-borderStartY)*borderStartX;
-
-			double distance = Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
-			if ( distance < shortestDist){
-				shortestDist = distance;
-				collisionBorderIndex = i;
-			}
-		}
-		if ( shortestDist - hockey.getBordersThickness()/2 < this.size/2 
-			&& (this.getXPosition() > hockey.getArenaGoalLimits()[0]) 
-			&& (this.getXPosition() < hockey.getArenaGoalLimits()[1])
-			&& (this.getYPosition() - this.getSize()/2 <= hockey.getHeight()/2-hockey.getGoalWidth()/2 
-			|| this.getYPosition() + this.getSize()/2 >= hockey.getHeight()/2+hockey.getGoalWidth()/2)){
-			return collisionPoint(borders[collisionBorderIndex], this);
+		Line collisionLine = colidesLine(hockey, hockey.getBorders());
+		if ( ! inTheGoalArea(hockey) && collisionLine != null ){
+			return collisionPoint(collisionLine, this);
 		}
 		return new double[]{0,0};
 	}
@@ -277,36 +254,63 @@ public class Ball
 	 */
 	public double[] collidesGoalNet(Game hockey)
 	{	
+		Line collisionLine = colidesLine(hockey, hockey.getGoalNet());
+		if ( inTheGoalArea(hockey) && collisionLine != null ){
+			return collisionPoint(collisionLine, this);
+		}
+		return new double[]{0,0};
+	}
+
+	/**
+	 * Determines if the ball is in the goal area or not
+	 * 
+	 * @param hockey hockey game object
+	 * @return true if ball is in the goal area, false otherwise
+	 */
+	public boolean inTheGoalArea(Game hockey){
+		return ((this.getXPosition() - this.getSize()/2 < hockey.getArenaGoalLimits()[0] || 
+				 this.getXPosition() + this.getSize()/2 > hockey.getArenaGoalLimits()[1]) && 
+				 this.getYPosition() - this.getSize()/2 > hockey.getHeight()/2-hockey.getGoalWidth()/2 && 
+				 this.getYPosition() + this.getSize()/2 < hockey.getHeight()/2+hockey.getGoalWidth()/2 );
+	}
+
+	/**
+	 * Determines if the ball colides any of the given lines
+	 * 
+	 * @param hockey hockey game object
+	 * @param lines lines we check for collision
+	 * @return Line we colide, or null if we do not collide anything
+	 */
+	public Line colidesLine(Game hockey, Line[] lines){
 		double shortestDist = Double.POSITIVE_INFINITY;
-		int collisionNetIndex = 0;
-		Line[] goalNet = hockey.getGoalNet();
-
-		for(int i = 0; i < goalNet.length; i++){
-			double x1 = goalNet[i].getXStart();
-			double y1 = goalNet[i].getYStart();
-			double x2 = goalNet[i].getXEnd();
-			double y2 = goalNet[i].getYEnd();
-
-			double a = y1-y2;
-			double b = x2-x1;
-			double c = (x1-x2)*y1 + (y2-y1)*x1;
-
-			double distance = Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
-			if ( distance < shortestDist ){
+		Line collisionLine = null;
+		for(int i = 0; i < lines.length; i++){
+			double distance = distanceToLine(lines[i]);
+			if ( distance < shortestDist && (distance - hockey.getBordersThickness()/2 < this.size/2) ){
 				shortestDist = distance;
-				collisionNetIndex = i;
+				collisionLine = lines[i];
 			}
 		}
+		return collisionLine;
+	}
 
-		if ( shortestDist - 3/2 <= this.size/2 
-			&& (this.getXPosition() <= hockey.getArenaGoalLimits()[0] 
-			|| this.getXPosition() >= hockey.getArenaGoalLimits()[1])
-			&& (this.getYPosition() - this.getSize()/2 >= hockey.getHeight()/2-hockey.getGoalWidth()/2 )
-			&& (this.getYPosition() + this.getSize()/2 <= hockey.getHeight()/2+hockey.getGoalWidth()/2 )){
-			return collisionPoint(goalNet[collisionNetIndex], this);
-		}
+	/**
+	 * Calculates distance of the ball to the given line
+	 * 
+	 * @param line line we check distance to
+	 * @return distance to the given line
+	 */
+	public double distanceToLine(Line line){
+		double x1 = line.getXStart();
+		double y1 = line.getYStart();
+		double x2 = line.getXEnd();
+		double y2 = line.getYEnd();
 
-		return new double[]{0,0};
+		double a = y1-y2;
+		double b = x2-x1;
+		double c = (x1-x2)*y1 + (y2-y1)*x1;
+
+		return Math.abs((a*xPosition + b*yPosition + c))/Math.sqrt(a*a + b*b);
 	}
 
 	/**

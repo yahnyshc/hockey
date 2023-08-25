@@ -230,35 +230,22 @@ public class Ball
 	}
 
 	/**
-	 * Determines if this Ball hits the borders.
+	 * Determines if this Ball colides borders or net.
 	 * 
 	 * @param hockey hockey game object
-	 * @return point where the ball hits the border
-	 * else returns {0,0} array
+	 * @return point where the ball collides any line
+	 * else returns null otherwise
 	 */
-	public double[] collidesBorders(Game hockey)
-	{	
+	public double[] borderOrGoalCollision(Game hockey){
 		Line collisionLine = colidesLine(hockey, hockey.getBorders());
 		if ( ! inTheGoalArea(hockey) && collisionLine != null ){
 			return collisionPoint(collisionLine, this);
 		}
-		return new double[]{0,0};
-	}
-
-	/**
-	 * Determines if this Ball gets in the net.
-	 * 
-	 * @param hockey hockey game object
-	 * @return point where the ball hits the net
-	 * else returns {0,0} array
-	 */
-	public double[] collidesGoalNet(Game hockey)
-	{	
-		Line collisionLine = colidesLine(hockey, hockey.getGoalNet());
+		collisionLine = colidesLine(hockey, hockey.getGoalNet());
 		if ( inTheGoalArea(hockey) && collisionLine != null ){
 			return collisionPoint(collisionLine, this);
 		}
-		return new double[]{0,0};
+		return null;
 	}
 
 	/**

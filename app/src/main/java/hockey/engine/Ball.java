@@ -6,6 +6,12 @@ import engine.Line;
 import engine.Text;
 import engine.Rectangle;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.io.InputStream;
+
 /**
  * Models a simple solid sphere. 
  * This class represents a Ball object. When combined with the GameArena class,
@@ -25,6 +31,7 @@ public class Ball
 	private double xSpeed = 0;
 	private double ySpeed = 0;
 	private int player;
+	private BufferedImage image = null;
 
 										// Permissible colours are:
 										// BLACK, BLUE, CYAN, DARKGREY, GREY,
@@ -93,6 +100,20 @@ public class Ball
 		if (player == 1) { return (this.getXPosition() + this.getSize()/2 >= arena.getWidth()/2); }
 		if (player == 2) { return (this.getXPosition() - this.getSize()/2 <= arena.getWidth()/2); }
 		return false;
+	}
+
+	public void setImage(String filename){
+		try {
+            InputStream imageStream = Game.class.getResourceAsStream(filename);
+        	this.image = ImageIO.read(imageStream);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+
+	public BufferedImage getImage(){
+		return this.image;
 	}
 
 	public double getXSpeed() {
@@ -236,7 +257,7 @@ public class Ball
 	 * @return point where the ball collides any line
 	 * else returns null otherwise
 	 */
-	public double[] borderOrGoalCollision(Game hockey){
+	public double[] collidesBorderOrGoal(Game hockey){
 		Line collisionLine = colidesLine(hockey, hockey.getBorders());
 		if ( ! inTheGoalArea(hockey) && collisionLine != null ){
 			return collisionPoint(collisionLine, this);

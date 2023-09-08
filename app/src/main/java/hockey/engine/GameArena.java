@@ -180,7 +180,7 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 	public void setBackgroundImage(String filename)
 	{
 		Toolkit t=Toolkit.getDefaultToolkit();
-		backgroundImage = t.getImage(filename);
+		backgroundImage = t.getImage(Game.class.getResource(filename));
 	}
 
 	/**
@@ -240,7 +240,6 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 			if (!this.exiting)
 			{
 				graphics.clearRect(0,0, arenaWidth, arenaHeight);
-
 				if (backgroundImage != null)
 					graphics.drawImage(backgroundImage, 0, 0, arenaWidth, arenaHeight, 0, 0, backgroundImage.getWidth(null), backgroundImage.getHeight(null), null);
 
@@ -249,8 +248,21 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 					if (o instanceof Ball)
 					{
 						Ball b = (Ball) o;
-						graphics.setColor(this.getColourFromString(b.getColour()));
-						graphics.fillOval((int)(b.getXPosition() - b.getSize()/2), (int)(b.getYPosition() - b.getSize()/2), (int)b.getSize(), (int)b.getSize());
+						if (b.getImage() != null){
+							Ellipse2D oval = new Ellipse2D.Double(b.getXPosition()-b.getSize()/2, b.getYPosition()-b.getSize()/2, b.getSize(), b.getSize());
+
+							java.awt.Rectangle r = new java.awt.Rectangle(0, 0, (int)b.getImage().getWidth(), (int)b.getImage().getHeight());
+
+							TexturePaint texture = new TexturePaint(b.getImage(), r);
+
+							graphics.setPaint(texture);
+
+							graphics.fill(oval);
+						}
+						else{
+							graphics.setColor(this.getColourFromString(b.getColour()));
+							graphics.fillOval((int)(b.getXPosition() - b.getSize()/2), (int)(b.getYPosition() - b.getSize()/2), (int)b.getSize(), (int)b.getSize());
+						}
 					}
 
 					if (o instanceof Rectangle)

@@ -64,21 +64,25 @@ public class Game
         this.arena = new GameArena(width, height);
 
         // Cheat messages
-        Text Cheats = new Text("Cheats: ", 20, width/4, height-60, "White", 3 );
-        Text Restart = new Text("1) Press R to reset positions or N to restart ", 15, width/4+100, height-90, "CYAN", 3 );
-        Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "CYAN", 3 );
-        Text PuckSpeed = new Text("3) Press 'K' to make puck slower  or 'L' to make it faster", 15, width/4+100, height-50, "CYAN", 3 );
-        Text GoalSize = new Text("4) Press 'G' to make goal smaller or 'B' to make it bigger", 15, width/4+100, height-30, "CYAN", 3 );
-        Text Mute = new Text("5) Press 'M' to mute the sound", 15, width/4+100, height-10, "CYAN", 3 );
+        Text Cheats = new Text("Cheats: ", 20, width/4, height-60, "BLACK", 3 );
+        Text Restart = new Text("1) Press R to reset positions or N to restart ", 15, width/4+100, height-90, "BLACK", 3 );
+        Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "BLACK", 3 );
+        Text PuckSpeed = new Text("3) Press 'K' to make puck slower  or 'L' to make it faster", 15, width/4+100, height-50, "BLACK", 3 );
+        Text GoalSize = new Text("4) Press 'G' to make goal smaller or 'B' to make it bigger", 15, width/4+100, height-30, "BLACK", 3 );
+        Text Mute = new Text("5) Press 'M' to mute the sound", 15, width/4+100, height-10, "BLACK", 3 );
 
         cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize, Mute};
-        
+
         // Game parameters by default
-        Text puckSpd = new Text("Puck speed = 0.6", 20, 250, 30, "White", 3 );
-        Text puckSz = new Text("Puck size = 20", 20, 525, 30, "White", 3 );
-        Text goalSz = new Text("Goal size = 160", 20, 775, 30, "White", 3 );
+        Text puckSpdText = new Text("Puck speed", 20, arena.getArenaWidth()/3-55, 25, "BLACK", 3 );
+        Text puckSzText = new Text("Puck size", 20, arena.getArenaWidth()/2-55, 25, "BLACK", 3 );
+        Text goalSzText = new Text("Goal size", 20, arena.getArenaWidth()-arena.getArenaWidth()/3-55, 25, "BLACK", 3 );
+
+        Text puckSpd = new Text("       0.6", 20, arena.getArenaWidth()/3-55, 50, "BLACK", 3 );
+        Text puckSz = new Text("      20", 20, arena.getArenaWidth()/2-55, 50, "BLACK", 3 );
+        Text goalSz = new Text("     160", 20, arena.getArenaWidth()-arena.getArenaWidth()/3-55, 50, "BLACK", 3 );
         
-        gameParams = new Text[]{puckSpd, puckSz, goalSz };
+        gameParams = new Text[]{ puckSpd, puckSz, goalSz, puckSpdText, puckSzText, goalSzText };
 
         // Initialize variables
         start();
@@ -105,13 +109,18 @@ public class Game
         bordersThickness = 10;
         borderColours = new String[]{"YELLOW", "GREEN", "RED", "BLUE"};
 
+        arena.setBackgroundImage("/iceBackground.png");
+
+        Text cheatsHint = new Text("Press C or P to see cheat combinations", 13, 15, this.height-15, "BLACK", 3);
+        arena.addText(cheatsHint);
+
         this.redMallet = new Ball(redMalletStartingPos[0], redMalletStartingPos[1], redMalletSize, "RED", 3, 1);
         this.blueMallet = new Ball(blueMalletStartingPos[0], blueMalletStartingPos[1], blueMalletSize, "BLUE", 3, 2);
 
         arena.addBall(redMallet);
         arena.addBall(blueMallet);
 
-        this.puck = new Ball(puckStartingPos[0], puckStartingPos[1], puckSize, "GREEN", 3);
+        this.puck = new Ball(puckStartingPos[0], puckStartingPos[1], puckSize, "BLACK", 3);
 
         arena.addBall(puck);
 
@@ -139,12 +148,11 @@ public class Game
 
         while(true){
             // safety checks
-            if (Double.isNaN(puck.getXSpeed())
-            || Double.isNaN(puck.getYSpeed())){
+            if ( Double.isNaN(puck.getXSpeed()) || Double.isNaN(puck.getYSpeed()) ){
                 puck.setXPosition(prevXpos);
                 puck.setYPosition(prevYpos);
-                puck.setXSpeed(-(prevXspd+0.1));
-                puck.setYSpeed(-(prevYspd+0.1));
+                puck.setXSpeed(-prevXspd);
+                puck.setYSpeed(-prevYspd);
             }
             prevXpos = puck.getXPosition();
             prevYpos = puck.getYPosition();
@@ -157,29 +165,18 @@ public class Game
             // move puck
             puck.move(puck.getXSpeed(), puck.getYSpeed());
 
-            double[] lineCollision = puck.borderOrGoalCollision(this);
+            double[] lineCollision = puck.collidesBorderOrGoal(this);
 
             if ( lineCollision != null ){
                 puck.deflect(this, puck, lineCollision, true);
-                // don't let balls go into each other
-                if ( puck.collides( redMallet) ){
-                    redMallet.move( puck.getXSpeed()*5, puck.getYSpeed()*5 );
-                }
-                if( puck.collides( blueMallet) ){
-                    blueMallet.move( puck.getXSpeed()*5, puck.getYSpeed()*5 );
-                }
             }
-            // don't let balls go into each other
-            else if ( puck.collides( blueMallet) && puck.collides( redMallet)){
+            if (puck.collides( blueMallet ) && puck.collides( redMallet )){
                 redMallet.move( blueMallet.getXSpeed()*5, blueMallet.getYSpeed()*5 );
                 blueMallet.move( redMallet.getXSpeed()*5, redMallet.getYSpeed()*5 );
             }
-            else if ( puck.collides( blueMallet ) ){
-                puck.deflect(this, blueMallet, lineCollision, false);
-            }
-            else if( puck.collides( redMallet ) ){
-                puck.deflect(this, redMallet, lineCollision, false);
-            }
+            if ( puck.collides( blueMallet ) ) puck.deflect(this, blueMallet, lineCollision, false);
+            if ( puck.collides( redMallet ) )  puck.deflect(this, redMallet, lineCollision, false);
+            
             // apply friction
             puck.setXSpeed(puck.getXSpeed() * friction);
             puck.setYSpeed(puck.getYSpeed() * friction);
@@ -192,34 +189,19 @@ public class Game
      * Update mallet position
      */
     public void moveMallet(Ball mallet){
-        boolean up = mallet.moveUp(arena);
-        boolean left = mallet.moveLeft(arena);
-        boolean right = mallet.moveRight(arena);
-        boolean down = mallet.moveDown(arena);
-
-        int xMove = 0;
-        xMove += right ? 1 : 0;
-        xMove += left ? -1 : 0;
-
-        int yMove = 0;
-        yMove += down ? 1 : 0;
-        yMove += up ? -1 : 0;
+        int xMove = 0, yMove = 0;
+        xMove += mallet.moveRight(arena) ? 1 : 0;
+        xMove += mallet.moveLeft(arena) ? -1 : 0;
+        yMove += mallet.moveDown(arena) ? 1 : 0;
+        yMove += mallet.moveUp(arena) ? -1 : 0;
 
         mallet.setXSpeed(xMove);
         mallet.setYSpeed(yMove);
-
         mallet.move( xMove, yMove );
 
-        if( mallet.borderOrGoalCollision(this) != null ){
+        if( (mallet.collidesBorderOrGoal(this) != null || mallet.crossesMiddleLine(arena)) ||
+            (mallet.collides(puck) && puck.collidesBorderOrGoal(this) != null) ){
             mallet.move( -xMove, -yMove );
-        }
-        else if( mallet.crossesMiddleLine(arena) ){
-            mallet.move( -xMove, -yMove );
-        }
-        else if( mallet.collides(puck) ){
-            if ( puck.borderOrGoalCollision(this) != null ){
-                mallet.move( -xMove, -yMove );
-            }
         }
     }
     
@@ -279,14 +261,14 @@ public class Game
      * Create arena goal nets
      */
     public void setGoalNet(){
-        Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "WHITE", 2);
-        Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 3, "WHITE", 3);
+        Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "BLACK", 2);
+        Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 3, "BLACK", 3);
 
-        Line goalRightNetTop = new Line(width - 10, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2-goalWidth/2+5, 3, "WHITE", 2);
-        Line goalLeftNetTop  = new Line(10, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2-goalWidth/2+5, 3, "WHITE", 2);
+        Line goalRightNetTop = new Line(width - 10, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2-goalWidth/2+5, 3, "BLACK", 2);
+        Line goalLeftNetTop  = new Line(10, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2-goalWidth/2+5, 3, "BLACK", 2);
 
-        Line goalRightNetBottom = new Line(width - 10, height/2+goalWidth/2-5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 3, "WHITE", 2);
-        Line goalLeftNetBottom  = new Line(10, height/2+goalWidth/2-5, leftRightIntend+2.5, height/2+goalWidth/2-5, 3, "WHITE", 2);
+        Line goalRightNetBottom = new Line(width - 10, height/2+goalWidth/2-5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 3, "BLACK", 2);
+        Line goalLeftNetBottom  = new Line(10, height/2+goalWidth/2-5, leftRightIntend+2.5, height/2+goalWidth/2-5, 3, "BLACK", 2);
         this.goalNet = new Line[]{goalRightNet, goalLeftNet, 
             goalRightNetTop, goalLeftNetTop, 
             goalRightNetBottom, goalLeftNetBottom
@@ -296,8 +278,8 @@ public class Game
             arena.addLine(this.goalNet[i]);
         }
 
-        this.goalLeftLine  = new Line(leftRightIntend+5, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2+goalWidth/2-5, 0.5, "WHITE", 1);
-        this.goalRightLine = new Line(width - leftRightIntend-5, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 0.5, "WHITE", 1);
+        this.goalLeftLine  = new Line(leftRightIntend+5, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2+goalWidth/2-5, 0.5, "BLACK", 1);
+        this.goalRightLine = new Line(width - leftRightIntend-5, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 0.5, "BLACK", 1);
 
         this.arenaGoalLimits = new double[]{goalLeftLine.getXStart(), goalRightLine.getXStart()};
 
@@ -332,8 +314,8 @@ public class Game
      * add additional design lines
      */
     public void additionalLines(){
-        Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
-        Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 1.5, "White", 1);
+        Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 1.5, "BLACK", 1);
+        Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 1.5, "BLACK", 1);
 
         arena.addLine(middleLeft);
         arena.addLine(middleRight);
@@ -345,11 +327,12 @@ public class Game
      * reset centre circle
      */
     public void resetCentreLine(){
-        this.centreOut = new Ball( width/2, height/2, centreSize, "WHITE", 1);
-        this.centreIn = new Ball( width/2, height/2, centreSize-2, "BLACK", 2);
+        this.centreOut = new Ball( (double)width/(double)2, (double)height/(double)2, centreSize, "BLACK", 1);
+        this.centreIn = new Ball( (double)width/(double)2, (double)height/(double)2, centreSize-2, "RED", 2);
+        centreIn.setImage("/iceCentre.png");
         
-        arena.addBall(centreIn);
         arena.addBall(centreOut); 
+        arena.addBall(centreIn);
     }
 
     /**
@@ -441,9 +424,9 @@ public class Game
      * Checks cheats usage
      */
     public void checkCheat(){
-        if ( arena.letterPressed('C') ){
+        if ( arena.letterPressed('C') || arena.letterPressed('P') ){
             displayCheats();
-            while ( arena.letterPressed('C') ){
+            while ( arena.letterPressed('C') || arena.letterPressed('P') ){
                 arena.pause();
             };
             hideCheats();
@@ -489,14 +472,14 @@ public class Game
                 blueMallet.move( 0, -5 );
             }
             pause15ms();
-            gameParams[2].setText("Goal size = "+Integer.toString(this.goalWidth));
+            gameParams[2].setText("    "+Integer.toString(this.goalWidth));
             resetBorders();
             resetGoalNet();
         }
         else if ( arena.letterPressed('B') ){
             if ( this.goalWidth + 5 < this.height/2){
                 this.goalWidth += 5;
-                gameParams[2].setText("Goal size = "+Integer.toString(this.goalWidth));
+                gameParams[2].setText("    "+Integer.toString(this.goalWidth));
                 resetBorders();
                 resetGoalNet();
             }
@@ -505,14 +488,14 @@ public class Game
         else if ( arena.letterPressed('K') ){
             if (puckSpeedMultiplier > 0.5){
                 puckSpeedMultiplier *= 0.95;
-                gameParams[0].setText("Puck speed = "+Double.toString(puckSpeedMultiplier).substring(0,4));
+                gameParams[0].setText("      "+Double.toString(puckSpeedMultiplier).substring(0,4));
             }
             pause15ms();
         }
         else if ( arena.letterPressed('L') ){
             if (puckSpeedMultiplier < 0.9){
                 puckSpeedMultiplier *= 1.05;
-                gameParams[0].setText("Puck speed = "+Double.toString(puckSpeedMultiplier).substring(0,4));
+                gameParams[0].setText("      "+Double.toString(puckSpeedMultiplier).substring(0,4));
             }
             pause15ms();
         }
@@ -524,7 +507,7 @@ public class Game
                 arena.removeBall(this.centreOut);
                 arena.removeBall(this.centreIn);
                 resetCentreLine();
-                gameParams[1].setText("Puck size = "+Double.toString(puckSize).substring(0,4));
+                gameParams[1].setText("     "+Double.toString(puckSize).substring(0,4));
             }
             pause15ms();
         }
@@ -536,7 +519,7 @@ public class Game
                 arena.removeBall(this.centreOut);
                 arena.removeBall(this.centreIn);
                 resetCentreLine();
-                gameParams[1].setText("Puck size = "+Double.toString(puckSize).substring(0,4));
+                gameParams[1].setText("     "+Double.toString(puckSize).substring(0,4));
             }
             pause15ms();
         }

@@ -1,3 +1,5 @@
+![image](https://github.com/yahnyshc/hockey/assets/143096926/fd53b357-0a62-4c4a-821d-6d0f15663579)
+
 To run the game:
 
 1) Clone the repository

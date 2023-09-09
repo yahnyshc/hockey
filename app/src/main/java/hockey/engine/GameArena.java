@@ -251,7 +251,7 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 						if (b.getImage() != null){
 							Ellipse2D oval = new Ellipse2D.Double(b.getXPosition()-b.getSize()/2, b.getYPosition()-b.getSize()/2, b.getSize(), b.getSize());
 
-							java.awt.Rectangle r = new java.awt.Rectangle(0, 0, (int)b.getImage().getWidth(), (int)b.getImage().getHeight());
+							java.awt.Rectangle r = new java.awt.Rectangle((int)(b.getXPosition()-b.getSize()/2), (int)(b.getYPosition()-b.getSize()/2), (int)b.getImage().getWidth(), (int)b.getImage().getHeight());
 
 							TexturePaint texture = new TexturePaint(b.getImage(), r);
 

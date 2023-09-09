@@ -106,7 +106,6 @@ public class Ball
 		try {
             InputStream imageStream = Game.class.getResourceAsStream(filename);
         	this.image = ImageIO.read(imageStream);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -345,7 +344,7 @@ public class Ball
 	public void deflect( Game hockey, Ball ball2, double[] collision, boolean isBorder)
     {   
 		if (!hockey.isSoundMuted()){
-			//hockey.playSound(hockey.getBounceSound());
+			hockey.playSound(hockey.getBounceSound());
 		}
         // The position and speed of each of the two balls in the x and y axis before collision.
         double xPosition1, xPosition2, yPosition1, yPosition2;

@@ -21,6 +21,7 @@ public class Game
     private GameArena arena; // The game arena
     private Ball redMallet; // The red mallet
     private Ball blueMallet; // The blue mallet
+    private double malletSpeed;
     private Ball puck; // The puck
     private double puckSpeedMultiplier; // The puck speed multiplier
     private int[] redMalletStartingPos; // The red mallet starting positions
@@ -28,7 +29,7 @@ public class Game
     private int[] puckStartingPos; // The puck starting positions
     private int redMalletSize; // The red mallet size
     private int blueMalletSize; // The blue mallet size
-    private double puckSize; // The puck size 
+    private int puckSize; // The puck size 
     private int topBottomIntend; // The top bottom intend
     private int leftRightIntend; // The left right intend
     private int goalWidth; // The goal width 
@@ -47,13 +48,12 @@ public class Game
     private Text blueMalletScore; // The blue mallet score
     private Text[] cheatCodes; // The cheat codes array
     private Text[] gameParams; // The game params array
-    private boolean soundMuted = false;
+    private boolean soundMuted = true;
     private Thread soundThread = null;
     private File bounceSound = new File("bounce.wav"); // The bounce sound file
     private File goalSound = new File("applause.wav"); // The win sound file
     private boolean StopGoalCelebrations = false; // The stop goal celebrations flag
     private int goalsToWin = 5; // The number of goals to win the game
-
 
     /**
      * Constructor
@@ -62,28 +62,6 @@ public class Game
         width = 1200;
         height = 800;
         this.arena = new GameArena(width, height);
-
-        // Cheat messages
-        Text Cheats = new Text("Cheats: ", 20, width/4, height-60, "BLACK", 3 );
-        Text Restart = new Text("1) Press R to reset positions or N to restart ", 15, width/4+100, height-90, "BLACK", 3 );
-        Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "BLACK", 3 );
-        Text PuckSpeed = new Text("3) Press 'K' to make puck slower  or 'L' to make it faster", 15, width/4+100, height-50, "BLACK", 3 );
-        Text GoalSize = new Text("4) Press 'G' to make goal smaller or 'B' to make it bigger", 15, width/4+100, height-30, "BLACK", 3 );
-        Text Mute = new Text("5) Press 'M' to mute the sound", 15, width/4+100, height-10, "BLACK", 3 );
-
-        cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize, Mute};
-
-        // Game parameters by default
-        Text puckSpdText = new Text("Puck speed", 20, arena.getArenaWidth()/3-55, 25, "BLACK", 3 );
-        Text puckSzText = new Text("Puck size", 20, arena.getArenaWidth()/2-55, 25, "BLACK", 3 );
-        Text goalSzText = new Text("Goal size", 20, arena.getArenaWidth()-arena.getArenaWidth()/3-55, 25, "BLACK", 3 );
-
-        Text puckSpd = new Text("       0.6", 20, arena.getArenaWidth()/3-55, 50, "BLACK", 3 );
-        Text puckSz = new Text("      20", 20, arena.getArenaWidth()/2-55, 50, "BLACK", 3 );
-        Text goalSz = new Text("     160", 20, arena.getArenaWidth()-arena.getArenaWidth()/3-55, 50, "BLACK", 3 );
-        
-        gameParams = new Text[]{ puckSpd, puckSz, goalSz, puckSpdText, puckSzText, goalSzText };
-
         // Initialize variables
         start();
     }
@@ -97,25 +75,52 @@ public class Game
         redMalletStartingPos = new int[]{this.width/6, this.height/2};
         blueMalletStartingPos = new int[]{(this.width/6)*5, this.height/2};
         puckStartingPos = new int[]{this.width/2, this.height/2};
-        redMalletSize = 50;
-        blueMalletSize = 50;
-        puckSize = 20;
+        redMalletSize = (width+height)/35;
+        blueMalletSize = (width+height)/35;
+        puckSize = (width+height)/100;
         puckSpeedMultiplier = 0.6;
-        topBottomIntend = 125;
-        leftRightIntend = 100;
-        goalWidth = 160;
-        gapsWidth = 20;
+        topBottomIntend = height / 7;
+        leftRightIntend = width / 12;
+        goalWidth = (width/10)*2;
+        gapsWidth = (width/40);
         centreSize = puckSize+60;
         bordersThickness = 10;
+        malletSpeed = (double)(width+height)/(double)2000;
         borderColours = new String[]{"YELLOW", "GREEN", "RED", "BLUE"};
 
+        Text puckSpdText = new Text("Puck speed", 20, arena.getArenaWidth()/3-55, 25, "BLACK", 3 );
+        Text puckSzText = new Text("Puck size", 20, arena.getArenaWidth()/2-55, 25, "BLACK", 3 );
+        Text goalSzText = new Text("Goal size", 20, arena.getArenaWidth()-arena.getArenaWidth()/3-55, 25, "BLACK", 3 );
+
+        String s1 = "       "+(Double.toString(puckSpeedMultiplier));
+        String s2 = "      "+Integer.toString(puckSize);
+        String s3 = "     "+Integer.toString(goalWidth);
+        Text puckSpd = new Text(s1, 20, arena.getArenaWidth()/3-55, 50, "BLACK", 3 );
+        Text puckSz = new Text(s2, 20, arena.getArenaWidth()/2-55, 50, "BLACK", 3 );
+        Text goalSz = new Text(s3, 20, arena.getArenaWidth()-arena.getArenaWidth()/3-55, 50, "BLACK", 3 );
+        
+        gameParams = new Text[]{ puckSpd, puckSz, goalSz, puckSpdText, puckSzText, goalSzText };
+
         arena.setBackgroundImage("/iceBackground.png");
+
+        // Cheat messages
+        Text Cheats = new Text("Cheats: ", 20, width/4, height-60, "BLACK", 3 );
+        Text Restart = new Text("1) Press R to reset positions or N to restart ", 15, width/4+100, height-90, "BLACK", 3 );
+        Text PuckSize = new Text("2) Press 'H' to make puck smaller or 'J' to make it bigger", 15, width/4+100, height-70, "BLACK", 3 );
+        Text PuckSpeed = new Text("3) Press 'K' to make puck slower  or 'L' to make it faster", 15, width/4+100, height-50, "BLACK", 3 );
+        Text GoalSize = new Text("4) Press 'G' to make goal smaller or 'B' to make it bigger", 15, width/4+100, height-30, "BLACK", 3 );
+        Text Mute = new Text("5) Press 'M' to mute the sound", 15, width/4+100, height-10, "BLACK", 3 );
+
+        cheatCodes = new Text[]{Cheats, Restart, PuckSize, PuckSpeed, GoalSize, Mute};
 
         Text cheatsHint = new Text("Press C or P to see cheat combinations", 13, 15, this.height-15, "BLACK", 3);
         arena.addText(cheatsHint);
 
         this.redMallet = new Ball(redMalletStartingPos[0], redMalletStartingPos[1], redMalletSize, "RED", 3, 1);
         this.blueMallet = new Ball(blueMalletStartingPos[0], blueMalletStartingPos[1], blueMalletSize, "BLUE", 3, 2);
+
+        redMallet.setImage("/redMallet2.png");
+        blueMallet.setImage("/blueMallet2.png");
 
         arena.addBall(redMallet);
         arena.addBall(blueMallet);
@@ -189,11 +194,11 @@ public class Game
      * Update mallet position
      */
     public void moveMallet(Ball mallet){
-        int xMove = 0, yMove = 0;
-        xMove += mallet.moveRight(arena) ? 1 : 0;
-        xMove += mallet.moveLeft(arena) ? -1 : 0;
-        yMove += mallet.moveDown(arena) ? 1 : 0;
-        yMove += mallet.moveUp(arena) ? -1 : 0;
+        double xMove = 0, yMove = 0;
+        xMove += mallet.moveRight(arena) ? malletSpeed : 0;
+        xMove += mallet.moveLeft(arena) ? -malletSpeed : 0;
+        yMove += mallet.moveDown(arena) ? malletSpeed : 0;
+        yMove += mallet.moveUp(arena) ? -malletSpeed : 0;
 
         mallet.setXSpeed(xMove);
         mallet.setYSpeed(yMove);
@@ -357,9 +362,6 @@ public class Game
     public void checkGoal(){
         boolean redScored = this.getPuck().getXPosition() - this.getPuck().getSize()/2 - 2 > this.getArenaGoalLimits()[1];
         boolean blueScored = this.getPuck().getXPosition() + this.getPuck().getSize()/2 + 2 < this.getArenaGoalLimits()[0];
-        Text goalMessage = null;
-        String message = "GOAL!!!";
-        String colour = "ORANGE";
         boolean isWin = false;
         if (redScored || blueScored){
             if ( blueScored ){
@@ -368,11 +370,14 @@ public class Game
             else{
                 this.setScore(Integer.parseInt(this.getRedMalletScore().getText()) + 1, Integer.parseInt(this.getBlueMalletScore().getText()));
             }
+
+            Text goalMessage;
+            String message = "GOAL!!!";
+            String colour = redScored ? "RED" : "BLUE";
             
             boolean blueWon = Integer.parseInt(this.getBlueMalletScore().getText()) == goalsToWin;
             boolean redWon = Integer.parseInt(this.getRedMalletScore().getText()) == goalsToWin;
             if(blueWon || redWon){
-                colour = blueWon ? "BLUE":"RED";
                 message = colour+" WON!";
                 // if game over, extend celebrations
                 isWin = true;
@@ -501,25 +506,25 @@ public class Game
         }
         else if ( arena.letterPressed('H') ){
             if (puckSize > 15){
-                puckSize *= 0.95;
+                puckSize -= 1;
                 centreSize = puckSize+60;
                 this.puck.setSize(puckSize);
                 arena.removeBall(this.centreOut);
                 arena.removeBall(this.centreIn);
                 resetCentreLine();
-                gameParams[1].setText("     "+Double.toString(puckSize).substring(0,4));
+                gameParams[1].setText("     "+Integer.toString(puckSize));
             }
             pause15ms();
         }
         else if ( arena.letterPressed('J') ){
             if (puckSize < 50){
-                puckSize *= 1.05;
+                puckSize += 1;
                 centreSize = puckSize+60;
                 this.puck.setSize(puckSize);
                 arena.removeBall(this.centreOut);
                 arena.removeBall(this.centreIn);
                 resetCentreLine();
-                gameParams[1].setText("     "+Double.toString(puckSize).substring(0,4));
+                gameParams[1].setText("     "+Integer.toString(puckSize));
             }
             pause15ms();
         }
@@ -658,10 +663,6 @@ public class Game
 
     public Line[] getGoalNet() {
         return goalNet;
-    }
-
-    public void setPuckSize(double puckSize) {
-        this.puckSize = puckSize;
     }
 
     public void setCentreSize(double centreSize) {

@@ -10,6 +10,7 @@ import java.util.Random;
 import javax.sound.sampled.Clip;
 import java.io.File;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.*;
 
 /**
  * A class of the hockey game and its methods and fields
@@ -50,8 +51,8 @@ public class Game
     private Text[] gameParams; // The game params array
     private boolean soundMuted = true;
     private Thread soundThread = null;
-    private File bounceSound = new File("bounce.wav"); // The bounce sound file
-    private File goalSound = new File("applause.wav"); // The win sound file
+    private String bounceSound = "/sounds/bounce.wav"; // The bounce sound file
+    private String goalSound = "/sounds/applause.wav"; // The win sound file
     private boolean StopGoalCelebrations = false; // The stop goal celebrations flag
     private int goalsToWin = 5; // The number of goals to win the game
     private boolean goalCelebrationOngoing = false;
@@ -85,7 +86,7 @@ public class Game
         goalWidth = (width/10)*2;
         gapsWidth = (width/40);
         centreSize = puckSize+60;
-        bordersThickness = 10;
+        bordersThickness = 16;
         malletSpeed = (double)(width+height)/(double)2000;
         borderColours = new String[]{"RED", "BLUE", "BLUE", "RED"};
         goalCelebrationOngoing = false;
@@ -140,22 +141,8 @@ public class Game
     public void movePuck(){
         // friction to slow down th puck
         double friction = 0.99973;
-        double prevXpos = 0;
-        double prevYpos = 0;
-        double prevXspd = 0;
-        double prevYspd = 0;
 
         while(true){
-            // safety checks
-            if ( Double.isNaN(puck.getXSpeed()) || Double.isNaN(puck.getYSpeed()) ){
-                puck.setPosition(prevXpos, prevYpos);
-                puck.setSpeed(-prevXspd, -prevYspd);
-            }
-            prevXpos = puck.getXPosition();
-            prevYpos = puck.getYPosition();
-            prevXspd = puck.getXSpeed();
-            prevYspd = puck.getYSpeed();
-
             // move puck
             puck.move(puck.getXSpeed(), puck.getYSpeed());
 
@@ -243,6 +230,7 @@ public class Game
         for (int i = 0; i < borders.length; i++ ){
             arena.removeLine(borders[i]);
         }
+        borderColours = new String[]{"RED", "BLUE", "BLUE", "RED"};
         setBorders();
     }
 
@@ -250,14 +238,14 @@ public class Game
      * Create arena goal nets
      */
     public void setGoalNet(){
-        Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 3, "BLACK", 2);
-        Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 3, "BLACK", 3);
+        Line goalRightNet = new Line(width - 10, height/2-goalWidth/2+5, width - 10, height/2+goalWidth/2-5, 5, "BLACK", 2);
+        Line goalLeftNet  = new Line(10, height/2-goalWidth/2+5, 10, height/2+goalWidth/2-5, 5, "BLACK", 3);
 
-        Line goalRightNetTop = new Line(width - 10, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2-goalWidth/2+5, 3, "BLACK", 2);
-        Line goalLeftNetTop  = new Line(10, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2-goalWidth/2+5, 3, "BLACK", 2);
+        Line goalRightNetTop = new Line(width - 10, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2-goalWidth/2+5, 5, "BLACK", 2);
+        Line goalLeftNetTop  = new Line(10, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2-goalWidth/2+5, 5, "BLACK", 2);
 
-        Line goalRightNetBottom = new Line(width - 10, height/2+goalWidth/2-5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 3, "BLACK", 2);
-        Line goalLeftNetBottom  = new Line(10, height/2+goalWidth/2-5, leftRightIntend+2.5, height/2+goalWidth/2-5, 3, "BLACK", 2);
+        Line goalRightNetBottom = new Line(width - 10, height/2+goalWidth/2-5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 5, "BLACK", 2);
+        Line goalLeftNetBottom  = new Line(10, height/2+goalWidth/2-5, leftRightIntend+2.5, height/2+goalWidth/2-5, 5, "BLACK", 2);
         this.goalNet = new Line[]{goalRightNet, goalLeftNet, 
             goalRightNetTop, goalLeftNetTop, 
             goalRightNetBottom, goalLeftNetBottom
@@ -267,8 +255,8 @@ public class Game
             arena.addLine(this.goalNet[i]);
         }
 
-        this.goalLeftLine  = new Line(leftRightIntend+5, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2+goalWidth/2-5, 0.5, "BLACK", 1);
-        this.goalRightLine = new Line(width - leftRightIntend-5, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 0.5, "BLACK", 1);
+        this.goalLeftLine  = new Line(leftRightIntend+5, height/2-goalWidth/2+5, leftRightIntend+2.5, height/2+goalWidth/2-5, 2, "BLACK", 1);
+        this.goalRightLine = new Line(width - leftRightIntend-5, height/2-goalWidth/2+5, width - leftRightIntend-2.5, height/2+goalWidth/2-5, 2, "BLACK", 1);
 
         this.arenaGoalLimits = new double[]{goalLeftLine.getXStart(), goalRightLine.getXStart()};
 
@@ -303,8 +291,8 @@ public class Game
      * add additional design lines
      */
     public void additionalLines(){
-        Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 1.5, "BLACK", 1);
-        Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 1.5, "BLACK", 1);
+        Line middleLeft = new Line( width/2-gapsWidth/4, topBottomIntend+10, width/2-gapsWidth/4, height - topBottomIntend-10, 2.5, "BLACK", 1);
+        Line middleRight = new Line( width/2+gapsWidth/4, topBottomIntend+10, width/2+gapsWidth/4, height - topBottomIntend-10, 2.5, "BLACK", 1);
 
         arena.addLine(middleLeft);
         arena.addLine(middleRight);
@@ -317,7 +305,7 @@ public class Game
      */
     public void resetCentreLine(){
         this.centreOut = new Ball( (double)width/(double)2, (double)height/(double)2, centreSize, "BLACK", 1);
-        this.centreIn = new Ball( (double)width/(double)2, (double)height/(double)2, centreSize-2, "RED", 2);
+        this.centreIn = new Ball( (double)width/(double)2, (double)height/(double)2, centreSize-5, "RED", 2);
         centreIn.setImage("/iceCentre.png");
         
         arena.addBall(centreOut); 
@@ -349,6 +337,7 @@ public class Game
         boolean isWin = false;
         if ( redScored || blueScored ){
             goalCelebrationOngoing = true;
+
             if ( blueScored ){
                 this.setScore(Integer.parseInt(this.getRedMalletScore().getText()), Integer.parseInt(this.getBlueMalletScore().getText()) + 1);
             }
@@ -416,6 +405,7 @@ public class Game
         }
         if ( arena.letterPressed('R') ){
             resetPositions();
+            resetBorders();
             StopGoalCelebrations = true;
             goalCelebrationOngoing = false;
         }
@@ -536,9 +526,31 @@ public class Game
      * play sound
      * @param filename file to get sound from
      */
-    public void playSound(File filename)
+    public void playSound(String filename)
     {   
-        Thread thread = new Thread(){
+
+         try {
+            // Create an AudioInputStream from the sound file
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(Game.class.getResourceAsStream(filename));
+
+            // Get the Clip for playback
+            Clip clip = AudioSystem.getClip();
+
+            // Open the audio clip with the provided audio input stream
+            clip.open(audioInputStream);
+
+            // Start playing the sound
+            clip.start();
+
+            // Sleep to allow the sound to finish playing (you can remove this if needed)
+            Thread.sleep(clip.getMicrosecondLength() / 1000);
+
+            // Close the clip after playing
+            clip.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+/*         Thread thread = new Thread(){
             public void run(){
                 try
                 {
@@ -558,7 +570,7 @@ public class Game
         }
         if (!soundThread.isAlive()){
             thread.start();
-        }
+        } */
     }
 
     public void hideCheats(){
@@ -575,11 +587,11 @@ public class Game
         this.soundThread = soundThread;
     }
 
-    public File getGoalSound() {
+    public String getGoalSound() {
         return goalSound;
     }
 
-    public void setGoalSound(File goalSound) {
+    public void setGoalSound(String goalSound) {
         this.goalSound = goalSound;
     }
 
@@ -675,11 +687,11 @@ public class Game
         this.gameParams = gameParams;
     }
 
-    public File getBounceSound() {
+    public String getBounceSound() {
         return bounceSound;
     }
 
-    public void setBounceSound(File bounceSound) {
+    public void setBounceSound(String bounceSound) {
         this.bounceSound = bounceSound;
     }
 

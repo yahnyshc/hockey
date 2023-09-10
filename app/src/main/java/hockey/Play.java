@@ -49,7 +49,7 @@ public class Play{
                 while(true){
                     if ( ! hockey.goalCelebrationOngoing() ){
                         hockey.checkGoal();
-                        try { sleep(120); }
+                        try { sleep(140); }
 		                catch (Exception e) {};
                     }
                 }

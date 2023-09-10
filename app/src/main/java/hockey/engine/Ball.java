@@ -398,23 +398,16 @@ public class Ball
 
 		double[] momentumSpeed = deflectionMomentum(hockey, x, y, xSpeed2, ySpeed2);
 		this.setSpeed( momentumSpeed[0], momentumSpeed[1] );
+
 		Line colisionLine = getCollisionLine(hockey); 
 		if ( isBorder ){
 			while( colisionLine == getCollisionLine(hockey) ){
-				this.move( this.getXSpeed(), this.getYSpeed());
+				this.move( this.getXSpeed()/100, this.getYSpeed()/100);
 			} 
 		}
     }
 
 	private double[] deflectionMomentum(Game hockey, double xPosition2, double yPosition2, double xSpeed2, double ySpeed2){
-		//double xPosition1 = this.getXPosition();
-        //double yPosition1 = this.getYPosition();
-		//double slope = (yPosition2 - yPosition1) / (xPosition2 - xPosition1);
-		//double degree = Math.atan(slope);
-		//double distance = this.getSize()/2; 
-		//double x = xPosition1 + distance * Math.cos(degree);
-		//double y = yPosition1 + distance * Math.sin(degree);
-		
 		// Calculate initial momentum of the balls... We assume unit mass here.
         double p1InitialMomentum = Math.sqrt(this.getXSpeed() * this.getXSpeed() + this.getYSpeed() * this.getYSpeed());
         double p2InitialMomentum = Math.sqrt(xSpeed2 * xSpeed2 + ySpeed2 * ySpeed2);

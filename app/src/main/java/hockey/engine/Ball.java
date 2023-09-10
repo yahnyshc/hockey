@@ -132,6 +132,15 @@ public class Ball
 	}
 
 	/**
+	 * Set speed of a ball
+	 * @param x and y speed
+	 */
+	public void setSpeed(double x, double y){
+		this.xSpeed = x;
+		this.ySpeed = y;
+	}
+
+	/**
 	 * Obtains the current position of this Ball.
 	 * @return the X coordinate of this Ball within the GameArena.
 	 */
@@ -164,6 +173,11 @@ public class Ball
 	 */
 	public void setYPosition(double y)
 	{
+		this.yPosition = y;
+	}
+
+	public void setPosition(double x, double y){
+		this.xPosition = x;
 		this.yPosition = y;
 	}
 
@@ -250,22 +264,31 @@ public class Ball
 	}
 
 	/**
-	 * Determines if this Ball colides borders or net.
+	 * Get the line ball colides.
+	 * 
+	 * @param hockey hockey game object
+	 * @return line that the ball colides
+	 * else returns null otherwise
+	 */
+	public Line getCollisionLine(Game hockey){
+		Line collisionLine = colidesLine(hockey, hockey.getBorders());
+		if ( ! inTheGoalArea(hockey) && collisionLine != null ) return collisionLine;
+		collisionLine = colidesLine(hockey, hockey.getGoalNet());
+		if ( inTheGoalArea(hockey) && collisionLine != null ) return collisionLine;
+		return null;
+	}
+
+	/**
+	 * Get the point where ball colides border.
 	 * 
 	 * @param hockey hockey game object
 	 * @return point where the ball collides any line
 	 * else returns null otherwise
 	 */
-	public double[] collidesBorderOrGoal(Game hockey){
-		Line collisionLine = colidesLine(hockey, hockey.getBorders());
-		if ( ! inTheGoalArea(hockey) && collisionLine != null ){
-			return collisionPoint(collisionLine, this);
-		}
-		collisionLine = colidesLine(hockey, hockey.getGoalNet());
-		if ( inTheGoalArea(hockey) && collisionLine != null ){
-			return collisionPoint(collisionLine, this);
-		}
-		return null;
+	public double[] getCollisionPoint(Game hockey){
+		Line l = getCollisionLine(hockey);
+		if (l != null) return this.collisionPoint(l, this);
+		else return null;
 	}
 
 	/**
@@ -343,22 +366,18 @@ public class Ball
 	 */
 	public void deflect( Game hockey, Ball ball2, double[] collision, boolean isBorder)
     {   
-		if (!hockey.isSoundMuted()){
-			hockey.playSound(hockey.getBounceSound());
-		}
+		if (!hockey.isSoundMuted()) hockey.playSound(hockey.getBounceSound());
+
         // The position and speed of each of the two balls in the x and y axis before collision.
-        double xPosition1, xPosition2, yPosition1, yPosition2;
-        double xSpeed1, xSpeed2, ySpeed1, ySpeed2;
-        xPosition1 = this.getXPosition();
-        yPosition1 = this.getYPosition();
-        xSpeed1 = this.getXSpeed();
-        ySpeed1 = this.getYSpeed();
+        double xPosition2, yPosition2, xSpeed2, ySpeed2;
+		double distance;
         if ( isBorder ){
             xPosition2 = collision[0];
             yPosition2 = collision[1];
 
             xSpeed2 = -1 * this.getXSpeed() * 1.10;
             ySpeed2 = -1 * this.getYSpeed() * 1.10;
+			distance = hockey.getBordersThickness()/2;
         }
         else{
             xPosition2 = ball2.getXPosition();
@@ -369,14 +388,33 @@ public class Ball
                 xSpeed2 = -1 * this.getXSpeed();
                 ySpeed2 = -1 * this.getYSpeed();
             }
+			distance = ball2.getSize()/2;
         }
-		double[] momentumSpeed = deflectionMomentum(hockey, xPosition2, yPosition2, xSpeed2, ySpeed2);
-        this.setXSpeed( momentumSpeed[0] );
-        this.setYSpeed( momentumSpeed[1] );
 		
+		double slope = (yPosition2 - this.getYPosition()) / (xPosition2 - this.getXPosition());
+		double degree = Math.atan(slope);
+		double x = xPosition2 + distance * Math.cos(degree);
+		double y = yPosition2 + distance * Math.sin(degree);
+
+		double[] momentumSpeed = deflectionMomentum(hockey, x, y, xSpeed2, ySpeed2);
+		this.setSpeed( momentumSpeed[0], momentumSpeed[1] );
+		Line colisionLine = getCollisionLine(hockey); 
+		if ( isBorder ){
+			while( colisionLine == getCollisionLine(hockey) ){
+				this.move( this.getXSpeed(), this.getYSpeed());
+			} 
+		}
     }
 
 	private double[] deflectionMomentum(Game hockey, double xPosition2, double yPosition2, double xSpeed2, double ySpeed2){
+		//double xPosition1 = this.getXPosition();
+        //double yPosition1 = this.getYPosition();
+		//double slope = (yPosition2 - yPosition1) / (xPosition2 - xPosition1);
+		//double degree = Math.atan(slope);
+		//double distance = this.getSize()/2; 
+		//double x = xPosition1 + distance * Math.cos(degree);
+		//double y = yPosition1 + distance * Math.sin(degree);
+		
 		// Calculate initial momentum of the balls... We assume unit mass here.
         double p1InitialMomentum = Math.sqrt(this.getXSpeed() * this.getXSpeed() + this.getYSpeed() * this.getYSpeed());
         double p2InitialMomentum = Math.sqrt(xSpeed2 * xSpeed2 + ySpeed2 * ySpeed2);

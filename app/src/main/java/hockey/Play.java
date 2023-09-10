@@ -43,5 +43,18 @@ public class Play{
             }
         };
         t4.start();
+
+        Thread t5 = new Thread() {
+            public void run() {
+                while(true){
+                    if ( ! hockey.goalCelebrationOngoing() ){
+                        hockey.checkGoal();
+                        try { sleep(120); }
+		                catch (Exception e) {};
+                    }
+                }
+            }
+        };
+        t5.start();
     }
 }

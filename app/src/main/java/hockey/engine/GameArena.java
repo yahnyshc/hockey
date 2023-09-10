@@ -53,6 +53,7 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 	private Map<RenderingHints.Key, Object> renderingHints;
 	private boolean rendered = false;
 	private Image backgroundImage = null;
+	private Image dashboardImage = null;
 
 	/**
 	 * Create a view of a GameArena.
@@ -60,9 +61,11 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 	 * @param width The width of the playing area, in pixels.
 	 * @param height The height of the playing area, in pixels.
 	 */
-	public GameArena(int width, int height)
+	public GameArena(int width, int height, String backImgFile, String dashbrdImgFile)
 	{
 		this.init(width, height, true);
+		setBackgroundImage(backImgFile);
+		setDashBoardImage(dashbrdImgFile);
 	}
 
 	/**
@@ -72,9 +75,11 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 	 * @param height The height of the playing area, in pixels.
 	 * @param createWindow Defines if a window should be created to host this GameArena. @see getPanel.
 	 */
-	public GameArena(int width, int height, boolean createWindow)
+	public GameArena(int width, int height, String backImgFile, String dashbrdImgFile, boolean createWindow)
 	{
 		this.init(width, height, createWindow);
+		setBackgroundImage(backImgFile);
+		setDashBoardImage(dashbrdImgFile);
 	}
 
 	/**
@@ -98,7 +103,7 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 
 		// Add standard colours.
 		colours.put("BLACK", Color.BLACK);
-		colours.put("BLUE", Color.BLUE);
+		colours.put("BLUE", new Color(15, 82, 186));
 		colours.put("CYAN", Color.CYAN);
 		colours.put("DARKGREY", Color.DARK_GRAY);
 		colours.put("GREY", Color.GRAY);
@@ -106,8 +111,8 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 		colours.put("LIGHTGREY", Color.LIGHT_GRAY);
 		colours.put("MAGENTA", Color.MAGENTA);
 		colours.put("ORANGE", Color.ORANGE);
-		colours.put("PINK", Color.PINK);
-		colours.put("RED", Color.RED);
+		colours.put("PINK", new Color(255, 16, 240));
+		colours.put("RED", new Color(223, 3, 52));
 		colours.put("WHITE", Color.WHITE);
 		colours.put("YELLOW", Color.YELLOW);
 
@@ -243,6 +248,9 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 				if (backgroundImage != null)
 					graphics.drawImage(backgroundImage, 0, 0, arenaWidth, arenaHeight, 0, 0, backgroundImage.getWidth(null), backgroundImage.getHeight(null), null);
 
+				//display dashboard
+				graphics.drawImage(dashboardImage, 0, 0, arenaWidth, arenaHeight/12, 0, 0, dashboardImage.getWidth(null), dashboardImage.getHeight(null), null);
+
 				for (Object o : things)
 				{
 					if (o instanceof Ball)
@@ -251,7 +259,10 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 						if (b.getImage() != null){
 							Ellipse2D oval = new Ellipse2D.Double(b.getXPosition()-b.getSize()/2, b.getYPosition()-b.getSize()/2, b.getSize(), b.getSize());
 
-							java.awt.Rectangle r = new java.awt.Rectangle((int)(b.getXPosition()-b.getSize()/2), (int)(b.getYPosition()-b.getSize()/2), (int)b.getImage().getWidth(), (int)b.getImage().getHeight());
+							Rectangle2D r = new Rectangle2D.Double(
+								oval.getMinX(), oval.getMinY(),
+        						oval.getWidth(), oval.getHeight()
+							);
 
 							TexturePaint texture = new TexturePaint(b.getImage(), r);
 
@@ -446,6 +457,11 @@ public class GameArena extends JPanel implements Runnable, KeyListener, MouseLis
 	public void addText(Text t)
 	{
 		this.addThing(t, t.getLayer());
+	}
+
+	public void setDashBoardImage(String filename){
+		Toolkit t=Toolkit.getDefaultToolkit();
+		dashboardImage = t.getImage(Game.class.getResource(filename));
 	}
 
 

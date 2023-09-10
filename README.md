@@ -1,4 +1,4 @@
-![image](https://github.com/yahnyshc/hockey/assets/143096926/fd53b357-0a62-4c4a-821d-6d0f15663579)
+  ![image](https://github.com/yahnyshc/hockey/assets/143096926/74d68c77-7b0a-4465-b317-a5afffd0d3e1)
 
 To run the game:
 

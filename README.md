@@ -1,46 +1,22 @@
-  ![image](https://github.com/yahnyshc/hockey/assets/143096926/74d68c77-7b0a-4465-b317-a5afffd0d3e1)
+# AirHockey 2 player 2D game
 
-To run the game:
+# Features
+- There are two mallets and one puck.
+- To win, a red or blue player has to score 7 goals.
+- To reset the positions of mallets and puck press R.
+- To restart the game press N.
+- To mute the sound, press M.
+- The cheats list is available to see by holding C button.
+  
+# Getting started
+- Clone the repository
+- build the game using ./gradlew build
+- run the game using ./gradlew run
+- Red player control is WASD
+- Blue player control is UP,LEFT,RIGHT,DOWN arrows
 
-1) Clone the repository
-2) build the game using 
-./gradlew build
-3) run the game using
-./gradlew run
+# Demo
+https://github.com/yahnyshc/hockey/assets/143096926/aa4b949b-7569-472c-a72b-73cc36cf3b01
 
 
-The Game implements air hockey.
-There are two mallets, and one puck.
-To win, a red or blue player have to score 7 goals.
-To reset positions of mallets and puck press R.
-To restart game press N.
-To mute the sound, press M.
-Cheats list is avaliable to see by holding C button.
 
-To start the game, compile and run /game/airhockey/Play.java file.
-
-engine and sound folders are downloaded from https://github.lancs.ac.uk/chatzige/SCC110-AirHockey
-
-# SCC110-AirHockey
-
-This repository contains the following files for the SCC.110 project "Air Hockey" (Project 2 in 2022/23):
-
-**Java classes (.java files)**
-+ Ball.java
-+ GameArena.java
-+ Line.java
-+ Rectangle.java
-+ Text.java
-
-**Sound effects (.wav files)**
-+ applause.wav
-+ bounce.wav
-+ drumroll.wav
-+ fanfare.wav
-+ hit.wav
-
-**Game and run classes(.java files)**
-+ Play.java
-+ Game.java
-
-The folder **\docs** contains JavaDoc documentation. Click on *allclasses-index.html* to access the documentation.
